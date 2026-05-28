@@ -822,6 +822,36 @@ defesa contra alucinação.
 
 ---
 
+**Status:** ✅ Concluído (2026-05-28).
+
+Smoke 5/5 cenários verdes:
+- Cenário A (cadastro 2-step real): 3/3
+- Cenário B (telemetria live GABRIEL): 2/2
+- Cenário C (backwards compat BENEF-001): 2/2
+- Cenário D (pedido vago): 1/1 spot-check
+- "Sim isolado": 1/1 spot-check
+
+Pytest: 67/67 verdes.
+
+Detalhes em `SMOKE_PASSO_7_RESULTADOS.md`.
+
+Durante a execução do smoke, foram descobertos 3 bugs arquiteturais
+pré-existentes do BluaDiagnostics Sprint 2 (não introduzidos pela
+merge). Todos corrigidos via feature branch
+`feature/fix-bugs-passo-7`, com 4 fases de execução documentadas
+em `PLANO_FASES_2_A_5.md`. Ver merge commit `c9c6cad` no `git log`
+para detalhes completos.
+
+2 bugs pré-existentes documentados como issues separadas, fora do
+escopo desta merge:
+- BENEF-CV-002 alergias com formato inconsistente.
+- safety.py heurística "você tem" sem contexto.
+<!-- TODO: substituir esta linha pelas referências reais após Passo D
+     do warm-up. Formato esperado: "Ver ISSUES.md" OU "Ver issues #N
+     e #M no [GitHub/ClickUp/Linear/etc]". -->
+
+---
+
 ## Passo 8 (OPCIONAL) — Unificar Dash apps
 
 Refatoração: substituir `app/dash_app.py` (chatbot) e o `app.py` do dashboard por `blua_merge_files/app/unified_app.py`, mover as páginas do dashboard para `pages/` com `dash.register_page`.
