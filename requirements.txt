@@ -1,0 +1,43 @@
+# BluaDiagnostics — dependências Sprint 2
+
+# --- SDK Qwen (cliente HTTP via DashScope) ---
+openai>=1.50.0  # cliente HTTP genérico usado pelo SDK do DashScope
+
+# --- Orquestração multi-agente ---
+langgraph>=0.2.50
+langchain-text-splitters>=0.3.0
+
+# --- Vector DB e embeddings ---
+chromadb>=0.5.0
+sentence-transformers>=3.0.0
+numpy>=1.26.0  # MMR computation
+
+# --- Validação e tipos ---
+pydantic>=2.8.0
+typing-extensions>=4.12.0
+
+# --- Logging estruturado ---
+structlog>=24.4.0
+
+# --- Variáveis de ambiente ---
+python-dotenv>=1.0.1
+
+# --- Utilitários ---
+tenacity>=9.0.0
+regex>=2024.0.0  # B1: lookbehind variável (não suportado pelo `re` built-in)
+
+# --- Sprint 2 — Interface Dash ---
+dash>=2.18.0
+dash-bootstrap-components>=1.6.0
+
+# --- Sprint 2 — Fallback Streamlit (opcional) ---
+streamlit>=1.35.0
+
+# --- Sprint 2 — Observabilidade (opcional) ---
+langsmith>=0.1.0
+
+# --- Sprint 2 — Visualização de evals ---
+matplotlib>=3.8.0
+
+# --- Sprint 2 — Testes ---
+pytest>=8.0.0

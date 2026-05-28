@@ -1,0 +1,59 @@
+{
+  "slots_disponiveis": {
+    "urgente": [
+      {
+        "id": "AGD-URG-001",
+        "medico": "Plantão Cardiológico Blua",
+        "crm": "Plantão rotativo",
+        "disponibilidade": "Em aproximadamente 20 minutos",
+        "plataforma": "Teleconsulta Blua — Fila Prioritária",
+        "link_base": "https://blua.careplus.com.br/consulta/URG/fictício",
+        "instrucoes": "Mantenha o celular próximo e o link aberto. Se os sintomas piorarem, ligue 192 (SAMU)."
+      }
+    ],
+    "prioritario": [
+      {
+        "id": "AGD-PRI-001",
+        "medico": "Dr. Rafael Torres",
+        "crm": "CRM 78901/SP",
+        "especialidade": "Cardiologia",
+        "disponibilidade": "Hoje às 16h30",
+        "plataforma": "Teleconsulta Blua",
+        "link_base": "https://blua.careplus.com.br/consulta/PRI/fictício",
+        "instrucoes": "Você receberá SMS de confirmação. Acesse o link no horário indicado."
+      },
+      {
+        "id": "AGD-PRI-002",
+        "medico": "Dra. Claudia Martins",
+        "crm": "CRM 34567/SP",
+        "especialidade": "Cardiologia",
+        "disponibilidade": "Amanhã às 08h00",
+        "plataforma": "Teleconsulta Blua",
+        "link_base": "https://blua.careplus.com.br/consulta/PRI/fictício",
+        "instrucoes": "Acesse o link 5 minutos antes do horário."
+      }
+    ],
+    "rotina": [
+      {
+        "id": "AGD-ROT-001",
+        "medico": "Dra. Ana Cardoso",
+        "crm": "CRM 67890/SP",
+        "especialidade": "Cardiologia",
+        "disponibilidade": "08/05/2026 às 10h00",
+        "plataforma": "Teleconsulta Blua",
+        "link_base": "https://blua.careplus.com.br/consulta/ROT/fictício",
+        "instrucoes": "Acesse o link 5 minutos antes. Tenha documento de identidade em mãos."
+      },
+      {
+        "id": "AGD-ROT-002",
+        "medico": "Dr. Paulo Henrique",
+        "crm": "CRM 45678/SP",
+        "especialidade": "Cardiologia",
+        "disponibilidade": "12/05/2026 às 14h30",
+        "plataforma": "Teleconsulta Blua",
+        "link_base": "https://blua.careplus.com.br/consulta/ROT/fictício",
+        "instrucoes": "Acesse o link 5 minutos antes. Tenha documento de identidade em mãos."
+      }
+    ]
+  }
+}

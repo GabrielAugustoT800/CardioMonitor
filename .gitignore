@@ -1,0 +1,50 @@
+# Segredos e configuração local
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+
+# Virtualenvs (apenas em uso local — Colab não usa)
+.venv/
+venv/
+env/
+
+# Notebooks Jupyter
+.ipynb_checkpoints/
+
+# Caches de embeddings/HF (regeneráveis, podem chegar a 1+ GB)
+.cache/
+sentence_transformers/
+
+# Logs estruturados
+logs/*.json
+logs/*.log
+logs/*.jsonl
+
+# Banco de dados vetorial (regenerável)
+chroma_db/
+.chroma/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Pasta de referência dos patches — não versionar
+_ref_bluadiagnostics/
+
+# Backups da aplicacao da Sprint 2 (locais, nao versionar)
+_backup_sprint2/

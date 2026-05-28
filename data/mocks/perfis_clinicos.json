@@ -1,0 +1,636 @@
+{
+  "beneficiarios": [
+    {
+      "id": "BENEF-001",
+      "nome": "João Carlos Fictício",
+      "idade": 58,
+      "sexo": "masculino",
+      "plano": "Care Plus Premium",
+      "condicoes_ativas": [
+        {
+          "nome": "Hipertensão arterial sistêmica",
+          "cid": "I10",
+          "status": "controlada",
+          "desde": "2022-08-10"
+        },
+        {
+          "nome": "Arritmia sinusal",
+          "cid": "I49.8",
+          "status": "em acompanhamento",
+          "desde": "2023-02-20"
+        },
+        {
+          "nome": "Taquicardia supraventricular",
+          "cid": "I47.1",
+          "status": "histórico — episódio único",
+          "desde": "2023-06-15"
+        }
+      ],
+      "score_risco_cardiovascular": "moderado",
+      "medicacoes_ativas": [
+        {
+          "nome": "Losartana Potássica",
+          "dose": "50mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Hipertensão arterial",
+          "inicio": "2022-08-10"
+        },
+        {
+          "nome": "Atenolol",
+          "dose": "25mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Arritmia sinusal e controle de FC",
+          "inicio": "2023-02-20"
+        },
+        {
+          "nome": "AAS",
+          "dose": "100mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Prevenção cardiovascular primária",
+          "inicio": "2022-08-10"
+        }
+      ],
+      "alergias": [],
+      "consultas": {
+        "ultima": {
+          "data": "2026-03-15",
+          "especialidade": "Cardiologia",
+          "medico": "Dr. Carlos Melo — CRM 54321/SP",
+          "observacoes": "PA controlada 132x84 mmHg. FC 72 bpm em repouso. Mantida medicação atual.",
+          "plataforma": "Teleconsulta Blua"
+        },
+        "proxima": {
+          "data": "2026-09-15",
+          "especialidade": "Cardiologia",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "tipo": "Eletrocardiograma (ECG)",
+          "data": "2026-02-10",
+          "resultado": "Ritmo sinusal regular. Sem alterações agudas. FC 70 bpm.",
+          "laudo": "Normal"
+        },
+        {
+          "tipo": "Ecocardiograma transtorácico",
+          "data": "2026-01-20",
+          "resultado": "Fração de ejeção 62%. Câmaras sem dilatação. Função diastólica preservada.",
+          "laudo": "Normal"
+        },
+        {
+          "tipo": "Holter 24h",
+          "data": "2025-11-05",
+          "resultado": "Arritmia sinusal fisiológica. 3 extrassístoles isoladas em 24h.",
+          "laudo": "Sem achados de significância clínica"
+        }
+      ],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-03-15",
+        "pressao_arterial": "132x84 mmHg",
+        "frequencia_cardiaca": "72 bpm",
+        "saturacao_oxigenio": "98%",
+        "peso_kg": 78,
+        "altura_cm": 175,
+        "imc": 25.5
+      }
+    },
+    {
+      "id": "BENEF-002",
+      "nome": "Maria Aparecida Fictícia",
+      "idade": 67,
+      "sexo": "feminino",
+      "plano": "Care Plus Essencial",
+      "condicoes_ativas": [
+        {
+          "nome": "Insuficiência cardíaca com fração de ejeção reduzida",
+          "cid": "I50.0",
+          "status": "em tratamento",
+          "desde": "2021-04-12"
+        },
+        {
+          "nome": "Fibrilação atrial paroxística",
+          "cid": "I48.0",
+          "status": "em acompanhamento",
+          "desde": "2021-04-12"
+        },
+        {
+          "nome": "Hipertensão arterial sistêmica",
+          "cid": "I10",
+          "status": "parcialmente controlada",
+          "desde": "2018-09-03"
+        }
+      ],
+      "score_risco_cardiovascular": "alto",
+      "medicacoes_ativas": [
+        {
+          "nome": "Carvedilol",
+          "dose": "12.5mg",
+          "frequencia": "2x ao dia",
+          "indicacao": "Insuficiência cardíaca e FA",
+          "inicio": "2021-04-15"
+        },
+        {
+          "nome": "Enalapril",
+          "dose": "10mg",
+          "frequencia": "2x ao dia",
+          "indicacao": "Insuficiência cardíaca e hipertensão",
+          "inicio": "2021-04-15"
+        },
+        {
+          "nome": "Warfarina",
+          "dose": "5mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Anticoagulação na fibrilação atrial",
+          "inicio": "2021-05-01"
+        },
+        {
+          "nome": "Furosemida",
+          "dose": "40mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Controle de edema na IC",
+          "inicio": "2021-04-15"
+        }
+      ],
+      "alergias": [
+        {
+          "substancia": "AAS",
+          "reacao": "broncoespasmo",
+          "gravidade": "moderada"
+        }
+      ],
+      "consultas": {
+        "ultima": {
+          "data": "2026-04-02",
+          "especialidade": "Cardiologia",
+          "medico": "Dra. Fernanda Lima — CRM 89012/SP",
+          "observacoes": "INR 2.4 — dentro do alvo. Edema de membros inferiores leve. Manter esquema atual.",
+          "plataforma": "Presencial — Hospital Care Plus"
+        },
+        "proxima": {
+          "data": "2026-06-02",
+          "especialidade": "Cardiologia",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "tipo": "Ecocardiograma transtorácico",
+          "data": "2026-03-10",
+          "resultado": "Fração de ejeção 38%. Dilatação de ventrículo esquerdo.",
+          "laudo": "IC com fração de ejeção reduzida — estável"
+        },
+        {
+          "tipo": "INR (Coagulograma)",
+          "data": "2026-04-01",
+          "resultado": "INR 2.4",
+          "laudo": "Dentro do alvo terapêutico para FA (2.0–3.0)"
+        }
+      ],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-04-02",
+        "pressao_arterial": "148x92 mmHg",
+        "frequencia_cardiaca": "88 bpm",
+        "saturacao_oxigenio": "96%",
+        "peso_kg": 71,
+        "altura_cm": 162,
+        "imc": 27.1
+      }
+    },
+    {
+      "id": "BENEF-003",
+      "nome": "Roberto Silva Fictício",
+      "idade": 42,
+      "sexo": "masculino",
+      "plano": "Care Plus Premium",
+      "condicoes_ativas": [
+        {
+          "nome": "Hipertensão arterial sistêmica estágio 1",
+          "cid": "I10",
+          "status": "recém diagnosticada",
+          "desde": "2026-01-20"
+        }
+      ],
+      "score_risco_cardiovascular": "baixo-moderado",
+      "medicacoes_ativas": [
+        {
+          "nome": "Anlodipino",
+          "dose": "5mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Hipertensão arterial estágio 1",
+          "inicio": "2026-01-25"
+        }
+      ],
+      "alergias": [],
+      "consultas": {
+        "ultima": {
+          "data": "2026-01-20",
+          "especialidade": "Cardiologia",
+          "medico": "Dr. André Souza — CRM 23456/SP",
+          "observacoes": "Primeira consulta. PA 152x96 mmHg. Iniciado Anlodipino 5mg. Retorno em 3 meses.",
+          "plataforma": "Teleconsulta Blua"
+        },
+        "proxima": {
+          "data": "2026-04-20",
+          "especialidade": "Cardiologia",
+          "status": "pendente — retorno não realizado"
+        }
+      },
+      "exames_recentes": [
+        {
+          "tipo": "Eletrocardiograma (ECG)",
+          "data": "2026-01-20",
+          "resultado": "Ritmo sinusal. FC 82 bpm. Sem alterações.",
+          "laudo": "Normal"
+        },
+        {
+          "tipo": "Ecocardiograma transtorácico",
+          "data": "2026-01-20",
+          "resultado": "Fração de ejeção 65%. Sem alterações estruturais.",
+          "laudo": "Normal"
+        }
+      ],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-01-20",
+        "pressao_arterial": "152x96 mmHg",
+        "frequencia_cardiaca": "82 bpm",
+        "saturacao_oxigenio": "99%",
+        "peso_kg": 92,
+        "altura_cm": 180,
+        "imc": 28.4
+      }
+    },
+    {
+      "id": "BENEF-CV-001",
+      "nome": "Helena Pereira Fictícia",
+      "idade": 70,
+      "sexo": "feminino",
+      "plano": "Care Plus Premium",
+      "condicoes_ativas": [
+        {
+          "nome": "Insuficiência cardíaca com FE reduzida (35%)",
+          "cid": "I50.2",
+          "status": "controlada",
+          "desde": "2020-04-12"
+        },
+        {
+          "nome": "Diabetes mellitus tipo 2",
+          "cid": "E11",
+          "status": "em controle",
+          "desde": "2015-07-03"
+        },
+        {
+          "nome": "Doença arterial coronariana (stent em DA)",
+          "cid": "I25.1",
+          "status": "histórico — stent 2021",
+          "desde": "2021-09-18"
+        },
+        {
+          "nome": "Hipertensão arterial sistêmica",
+          "cid": "I10",
+          "status": "controlada",
+          "desde": "2010-02-01"
+        }
+      ],
+      "score_risco_cardiovascular": "alto",
+      "medicacoes_ativas": [
+        {
+          "nome": "Carvedilol",
+          "dose": "25mg",
+          "frequencia": "2x ao dia",
+          "indicacao": "IC com FE reduzida",
+          "inicio": "2020-05-01"
+        },
+        {
+          "nome": "Enalapril",
+          "dose": "20mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "IC e HAS",
+          "inicio": "2020-05-01"
+        },
+        {
+          "nome": "Espironolactona",
+          "dose": "25mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "IC",
+          "inicio": "2020-05-01"
+        },
+        {
+          "nome": "Furosemida",
+          "dose": "40mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "IC — controle volêmico",
+          "inicio": "2020-05-01"
+        },
+        {
+          "nome": "AAS",
+          "dose": "100mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Prevenção secundária DAC",
+          "inicio": "2021-09-18"
+        },
+        {
+          "nome": "Atorvastatina",
+          "dose": "40mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Dislipidemia / DAC",
+          "inicio": "2021-09-18"
+        },
+        {
+          "nome": "Metformina",
+          "dose": "850mg",
+          "frequencia": "2x ao dia",
+          "indicacao": "Diabetes mellitus tipo 2",
+          "inicio": "2015-07-03"
+        }
+      ],
+      "alergias": [],
+      "consultas": {
+        "ultima": {
+          "data": "2026-04-08",
+          "especialidade": "Cardiologia",
+          "medico": "Dra. Marina Lopes — CRM 67890/SP",
+          "observacoes": "IC em controle clínico. Ajuste de furosemida para 40mg. Peso estável. Sem ortopneia ou DPN.",
+          "plataforma": "Teleconsulta Blua"
+        },
+        "proxima": {
+          "data": "2026-07-08",
+          "especialidade": "Cardiologia",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "tipo": "Ecocardiograma transtorácico",
+          "data": "2026-03-15",
+          "resultado": "Fração de ejeção 36%. Disfunção sistólica moderada. Câmaras esquerdas dilatadas.",
+          "laudo": "IC com FE reduzida estável"
+        },
+        {
+          "tipo": "BNP",
+          "data": "2026-03-15",
+          "resultado": "342 pg/mL",
+          "laudo": "Compatível com IC em compensação"
+        }
+      ],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-04-08",
+        "pressao_arterial": "118x72 mmHg",
+        "frequencia_cardiaca": "68 bpm",
+        "saturacao_oxigenio": "96%",
+        "peso_kg": 64,
+        "altura_cm": 162,
+        "imc": 24.4
+      }
+    },
+    {
+      "id": "BENEF-CV-002",
+      "nome": "Roberto Costa Fictício",
+      "idade": 53,
+      "sexo": "masculino",
+      "plano": "Care Plus Essencial",
+      "condicoes_ativas": [
+        {
+          "nome": "Fibrilação atrial paroxística (CHA2DS2-VASc 2)",
+          "cid": "I48.0",
+          "status": "em controle",
+          "desde": "2024-11-10"
+        },
+        {
+          "nome": "Hipertensão arterial sistêmica",
+          "cid": "I10",
+          "status": "controlada",
+          "desde": "2018-06-15"
+        }
+      ],
+      "score_risco_cardiovascular": "moderado",
+      "medicacoes_ativas": [
+        {
+          "nome": "Apixabana",
+          "dose": "5mg",
+          "frequencia": "2x ao dia",
+          "indicacao": "Anticoagulação para FA",
+          "inicio": "2024-11-15"
+        },
+        {
+          "nome": "Metoprolol succinato",
+          "dose": "50mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Controle de FC em FA",
+          "inicio": "2024-11-15"
+        },
+        {
+          "nome": "Losartana",
+          "dose": "100mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Hipertensão arterial",
+          "inicio": "2018-06-15"
+        }
+      ],
+      "alergias": [
+        "Varfarina (substituída por DOAC após hemorragia gengival)"
+      ],
+      "consultas": {
+        "ultima": {
+          "data": "2026-03-22",
+          "especialidade": "Cardiologia",
+          "medico": "Dr. Felipe Andrade — CRM 78901/SP",
+          "observacoes": "Sem novos episódios de FA documentados nos últimos 60 dias. Anticoagulação mantida. PA controlada.",
+          "plataforma": "Teleconsulta Blua"
+        },
+        "proxima": {
+          "data": "2026-09-22",
+          "especialidade": "Cardiologia",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "tipo": "Holter 24h",
+          "data": "2026-02-10",
+          "resultado": "Ritmo sinusal predominante. Dois episódios de FA paroxística autolimitados (8min e 15min).",
+          "laudo": "FA paroxística — manter anticoagulação"
+        },
+        {
+          "tipo": "Ecocardiograma transtorácico",
+          "data": "2026-01-08",
+          "resultado": "Fração de ejeção 60%. Átrio esquerdo levemente aumentado.",
+          "laudo": "Compatível com FA"
+        }
+      ],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-03-22",
+        "pressao_arterial": "128x82 mmHg",
+        "frequencia_cardiaca": "74 bpm",
+        "saturacao_oxigenio": "98%",
+        "peso_kg": 84,
+        "altura_cm": 178,
+        "imc": 26.5
+      }
+    },
+    {
+      "id": "BENEF-CV-003",
+      "nome": "Ana Carolina Lima Fictícia",
+      "idade": 57,
+      "sexo": "feminino",
+      "plano": "Care Plus Premium",
+      "condicoes_ativas": [
+        {
+          "nome": "Angina microvascular",
+          "cid": "I20.8",
+          "status": "diagnóstico recente",
+          "desde": "2026-02-28"
+        },
+        {
+          "nome": "Menopausa (5 anos)",
+          "cid": "N95.1",
+          "status": "estabelecida",
+          "desde": "2021-01-01"
+        },
+        {
+          "nome": "Dislipidemia",
+          "cid": "E78.5",
+          "status": "em controle medicamentoso",
+          "desde": "2019-09-20"
+        }
+      ],
+      "score_risco_cardiovascular": "moderado",
+      "medicacoes_ativas": [
+        {
+          "nome": "Nitrato isossorbida",
+          "dose": "20mg",
+          "frequencia": "2x ao dia",
+          "indicacao": "Angina microvascular",
+          "inicio": "2026-03-01"
+        },
+        {
+          "nome": "Atorvastatina",
+          "dose": "20mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Dislipidemia / prevenção CV",
+          "inicio": "2019-09-20"
+        },
+        {
+          "nome": "AAS",
+          "dose": "100mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Prevenção CV",
+          "inicio": "2026-03-01"
+        }
+      ],
+      "alergias": [],
+      "consultas": {
+        "ultima": {
+          "data": "2026-02-28",
+          "especialidade": "Cardiologia",
+          "medico": "Dra. Beatriz Tavares — CRM 89012/SP",
+          "observacoes": "Investigação concluída — angina microvascular. Iniciado nitrato. Cintilografia compatível, holter sem arritmias.",
+          "plataforma": "Teleconsulta Blua"
+        },
+        "proxima": {
+          "data": "2026-05-28",
+          "especialidade": "Cardiologia",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "tipo": "Cintilografia miocárdica",
+          "data": "2026-02-15",
+          "resultado": "Defeito de perfusão reversível em parede inferior, sem necrose. Compatível com isquemia microvascular.",
+          "laudo": "Compatível com angina microvascular"
+        },
+        {
+          "tipo": "Holter 24h",
+          "data": "2026-02-10",
+          "resultado": "Ritmo sinusal. Sem arritmias significativas.",
+          "laudo": "Sem alterações"
+        }
+      ],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-02-28",
+        "pressao_arterial": "126x80 mmHg",
+        "frequencia_cardiaca": "72 bpm",
+        "saturacao_oxigenio": "98%",
+        "peso_kg": 67,
+        "altura_cm": 165,
+        "imc": 24.6
+      }
+    },
+    {
+      "id": "BENEF-MARIA",
+      "nome": "Maria Silva Fictícia",
+      "idade": 34,
+      "sexo": "feminino",
+      "plano": "Care Plus Essencial",
+      "condicoes_ativas": [
+        {
+          "nome": "Hipertensão arterial sistêmica",
+          "cid": "I10",
+          "status": "controlada",
+          "desde": "2024-06-15"
+        }
+      ],
+      "score_risco_cardiovascular": "baixo",
+      "medicacoes_ativas": [
+        {
+          "nome": "Losartana Potássica",
+          "dose": "50mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Hipertensão arterial",
+          "inicio": "2024-06-15"
+        }
+      ],
+      "alergias": [
+        {
+          "substancia": "Dipirona",
+          "reacao": "urticária",
+          "gravidade": "leve"
+        }
+      ],
+      "consultas": {
+        "ultima": {
+          "data": "2026-03-12",
+          "especialidade": "Cardiologia",
+          "medico": "Dr. João Almeida — CRM 45678/SP",
+          "observacoes": "PA controlada com Losartana 50mg. Manter conduta. MAPA 24h normal. Orientado controle dietético e atividade física regular. Retorno em 6 meses.",
+          "plataforma": "Telemedicina — Blua"
+        },
+        "proxima": {
+          "data": "2026-09-10",
+          "especialidade": "Cardiologia",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "tipo": "MAPA 24h",
+          "data": "2026-03-01",
+          "resultado": "Média 24h: 128x82 mmHg. Descenso noturno preservado (15%).",
+          "laudo": "Hipertensão arterial controlada com tratamento atual"
+        },
+        {
+          "tipo": "Eletrocardiograma de repouso",
+          "data": "2026-03-12",
+          "resultado": "Ritmo sinusal regular, FC 72 bpm. Sem alterações isquêmicas.",
+          "laudo": "ECG dentro da normalidade"
+        },
+        {
+          "tipo": "Perfil lipídico",
+          "data": "2026-02-28",
+          "resultado": "Colesterol total 178, HDL 58, LDL 102, Triglicerídeos 92",
+          "laudo": "Perfil lipídico adequado"
+        }
+      ],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-03-12",
+        "pressao_arterial": "126x80 mmHg",
+        "frequencia_cardiaca": "72 bpm",
+        "saturacao_oxigenio": "98%",
+        "peso_kg": 65,
+        "altura_cm": 162,
+        "imc": 24.8
+      }
+    }
+  ]
+}
