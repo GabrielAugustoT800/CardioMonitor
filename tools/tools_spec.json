@@ -520,7 +520,7 @@
       "properties": {
         "paciente_id": {
           "type": "string",
-          "description": "Identificador único do beneficiário Care Plus. Ex: BENEF-MARIA, BENEF-001."
+          "description": "Identificador único do beneficiário Care Plus. Ex: GABRIEL, BENEF-001."
         },
         "indicacao_clinica": {
           "type": "string",
@@ -567,8 +567,8 @@
       "rascunho_aprovado": {
         "status": "RASCUNHO_AGUARDANDO_REVISAO_MEDICA",
         "tag": "RASCUNHO_AGUARDANDO_REVISAO_MEDICA",
-        "paciente_id": "BENEF-MARIA",
-        "paciente_nome": "Maria Silva Fictícia",
+        "paciente_id": "GABRIEL",
+        "paciente_nome": "Gabriel Fictício",
         "indicacao_clinica": "manutenção do tratamento de hipertensão arterial controlada",
         "medicamentos": [
           {

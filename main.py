@@ -126,7 +126,7 @@ def main() -> int:
         choices=[
             "BENEF-001", "BENEF-002", "BENEF-003",
             "BENEF-CV-001", "BENEF-CV-002", "BENEF-CV-003",
-            "BENEF-MARIA",
+            "GABRIEL",
         ],
         help="ID do beneficiário mockado (default: BENEF-001)",
     )

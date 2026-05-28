@@ -151,7 +151,7 @@ def no_checkup(estado: EstadoBlua) -> dict:
     resultado = agente_checkup(
         mensagem=estado["mensagem_usuario"],
         historico=estado.get("historico", []),
-        beneficiario_id=estado.get("beneficiario_id", "BENEF-MARIA"),
+        beneficiario_id=estado.get("beneficiario_id", "GABRIEL"),
     )
     return {
         "resposta_agente": resultado["resposta"],
@@ -167,7 +167,7 @@ def no_triagem(estado: EstadoBlua) -> dict:
     resultado = agente_triagem(
         mensagem=estado["mensagem_usuario"],
         historico=estado.get("historico", []),
-        beneficiario_id=estado.get("beneficiario_id", "BENEF-MARIA"),
+        beneficiario_id=estado.get("beneficiario_id", "GABRIEL"),
     )
     return {
         "resposta_agente": resultado["resposta"],
@@ -183,7 +183,7 @@ def no_suporte(estado: EstadoBlua) -> dict:
     resultado = agente_suporte_clinico(
         mensagem=estado["mensagem_usuario"],
         historico=estado.get("historico", []),
-        beneficiario_id=estado.get("beneficiario_id", "BENEF-MARIA"),
+        beneficiario_id=estado.get("beneficiario_id", "GABRIEL"),
     )
     return {
         "resposta_agente": resultado["resposta"],
@@ -199,7 +199,7 @@ def no_prescricao(estado: EstadoBlua) -> dict:
     resultado = agente_prescricao(
         mensagem=estado["mensagem_usuario"],
         historico=estado.get("historico", []),
-        beneficiario_id=estado.get("beneficiario_id", "BENEF-MARIA"),
+        beneficiario_id=estado.get("beneficiario_id", "GABRIEL"),
     )
     return {
         "resposta_agente": resultado["resposta"],
@@ -220,7 +220,7 @@ def no_escalada_humana(estado: EstadoBlua) -> dict:
     resultado = agente_escalada_humana(
         mensagem=estado["mensagem_usuario"],
         motivo_escalada=estado.get("motivo_roteamento", "sintoma_critico_cv"),
-        beneficiario_id=estado.get("beneficiario_id", "BENEF-MARIA"),
+        beneficiario_id=estado.get("beneficiario_id", "GABRIEL"),
     )
     return {
         "resposta_agente": resultado["resposta"],
@@ -359,7 +359,7 @@ def no_saida(estado: EstadoBlua) -> dict:
         intent=estado.get("intent_classificada", "desconhecido"),
         tools_chamadas=estado.get("tools_chamadas", []),
         flags_safety=estado.get("flags_safety", []),
-        beneficiario_id=estado.get("beneficiario_id", "BENEF-MARIA"),
+        beneficiario_id=estado.get("beneficiario_id", "GABRIEL"),
     )
 
     return {
@@ -536,7 +536,7 @@ def executar_turno(
     grafo: StateGraph,
     mensagem_usuario: str,
     thread_id: str,
-    beneficiario_id: str = "BENEF-MARIA",
+    beneficiario_id: str = "GABRIEL",
     historico: list[dict] | None = None,
     flags_safety_anteriores: list[str] | None = None,
 ) -> dict:
@@ -547,7 +547,7 @@ def executar_turno(
         grafo: Grafo compilado pelo construir_grafo().
         mensagem_usuario: Mensagem atual do usuário.
         thread_id: ID único da sessão — preserva memória entre turnos.
-        beneficiario_id: ID do beneficiário mockado (default Maria do PDF).
+        beneficiario_id: ID do beneficiário mockado (default Gabriel do PDF).
         historico: Histórico externo opcional (para compat com CLI).
         flags_safety_anteriores: Flags do turno N-1 — alimentam lógica estatal
                                  do supervisor (escalada persistente).

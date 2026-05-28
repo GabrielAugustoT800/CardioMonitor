@@ -24,9 +24,9 @@ from .paths import TELEMETRY_CSV, GABRIEL_CSV
 # Map opcional de paciente_id (chatbot) → strings aceitas na coluna `patient`
 # do dashboard. Estendido em runtime via `register_alias`.
 _ALIAS: dict[str, list[str]] = {
-    # BENEF-MARIA é a paciente canônica do enunciado Sprint 2.
-    # O dataset de referência do dashboard é o "Gabriel" — usamos como fallback.
-    "BENEF-MARIA": ["BENEF-MARIA", "Gabriel", "live", "live-sim"],
+    # GABRIEL é o paciente canônico — alinhado com o dataset de referência
+    # do dashboard ("gabriel_data.csv" com 200 batimentos).
+    "GABRIEL": ["GABRIEL", "Gabriel", "live", "live-sim"],
 }
 
 
@@ -63,7 +63,7 @@ def load_recent_beats(
     """
     Retorna os últimos `n` batimentos do paciente.
 
-    Se não houver linhas para o paciente, e ele for BENEF-MARIA (canônico),
+    Se não houver linhas para o paciente, e ele for GABRIEL (canônico),
     cai para o gabriel_data.csv como referência. Para outros pacientes,
     devolve DataFrame vazio — caller decide o que fazer.
     """
@@ -74,8 +74,8 @@ def load_recent_beats(
         if not sub.empty:
             return sub.tail(n).reset_index(drop=True)
 
-    # Fallback: dataset de referência para BENEF-MARIA
-    if fallback_to_gabriel and paciente_id == "BENEF-MARIA":
+    # Fallback: dataset de referência para GABRIEL
+    if fallback_to_gabriel and paciente_id == "GABRIEL":
         gab = _read_csv_safe(GABRIEL_CSV)
         if not gab.empty:
             return gab.tail(n).reset_index(drop=True)

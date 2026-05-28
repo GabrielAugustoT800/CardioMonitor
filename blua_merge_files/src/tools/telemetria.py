@@ -28,7 +28,7 @@ def consultar_telemetria_dashboard(
     Consulta telemetria PPG mais recente capturada pelo CardioMonitor.
 
     Args:
-        paciente_id: ID do beneficiário. Ex: BENEF-MARIA, BENEF-NEW-001.
+        paciente_id: ID do beneficiário. Ex: GABRIEL, BENEF-NEW-001.
         janela_min: Tamanho da janela em minutos para o sumário (default 5).
         n_amostras: Quantos batimentos individuais devolver na lista
             de amostra (default 10, max recomendado 30).

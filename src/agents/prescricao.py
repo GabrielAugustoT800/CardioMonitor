@@ -62,7 +62,7 @@ def _executar_tool(nome: str, argumentos: dict) -> str:
 def agente_prescricao(
     mensagem: str,
     historico: list[dict],
-    beneficiario_id: str = "BENEF-MARIA",
+    beneficiario_id: str = "GABRIEL",
 ) -> dict:
     """Gera rascunho de prescrição CV; sinaliza HITL via requer_aprovacao_humana."""
     system = SYSTEM_PROMPT_PRESCRICAO + f"\n\nBENEFICIÁRIO ATIVO: {beneficiario_id}"

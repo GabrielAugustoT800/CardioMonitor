@@ -35,7 +35,7 @@ Sua única função é classificar a intenção do usuário em uma das categoria
 **Usuário**: "Minha receita de Losartana venceu, preciso renovar"
 → `{"intent": "prescricao", "confianca": 0.94}`
 
-**Usuário**: "Sou médico cardiologista, preciso gerar rascunho de prescrição pra paciente BENEF-MARIA"
+**Usuário**: "Sou médico cardiologista, preciso gerar rascunho de prescrição pra paciente GABRIEL"
 → `{"intent": "prescricao", "confianca": 0.92}`
 
 **Usuário**: "Como faço para controlar minha diabetes?"

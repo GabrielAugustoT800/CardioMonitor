@@ -113,7 +113,7 @@ def sugerir_rascunho_prescricao(
     RASCUNHO_AGUARDANDO_REVISAO_MEDICA, mesmo que tudo pareça correto.
 
     Args:
-        paciente_id: ID do beneficiário. Ex: 'BENEF-MARIA'.
+        paciente_id: ID do beneficiário. Ex: 'GABRIEL'.
         indicacao_clinica: Descrição da indicação clínica.
                           Ex: 'manutenção do tratamento de hipertensão controlada'.
         medicamentos_sugeridos: Lista de medicamentos com estrutura:

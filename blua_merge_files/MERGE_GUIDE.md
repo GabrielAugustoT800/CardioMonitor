@@ -90,11 +90,11 @@ Validar:
 ```bash
 python -c "from shared import list_patients, latest_beat; \
 print(len(list_patients()), 'pacientes'); \
-print(latest_beat('BENEF-MARIA'))"
+print(latest_beat('GABRIEL'))"
 ```
 
 Deve imprimir o número de pacientes e o último batimento do Gabriel
-(o dashboard usa esse CSV como dataset de referência para BENEF-MARIA
+(o dashboard usa esse CSV como dataset de referência para GABRIEL
 através do alias mapeado em `telemetry_store.py`).
 
 ## Passo 3 — Substituir as 3 tools
@@ -251,7 +251,7 @@ pyserial>=3.5              # ESP32 serial reader
 # 1. Bridge funciona com dados reais
 python -c "from shared import latest_beat, list_patients; \
 print(len(list_patients()), 'pacientes'); \
-print('último BPM:', latest_beat('BENEF-MARIA')['BPM'])"
+print('último BPM:', latest_beat('GABRIEL')['BPM'])"
 
 # 2. Pytest do chatbot continua verde
 pytest tests/ -v

@@ -558,10 +558,10 @@
       }
     },
     {
-      "id": "BENEF-MARIA",
-      "nome": "Maria Silva Fictícia",
+      "id": "GABRIEL",
+      "nome": "Gabriel Fictício",
       "idade": 34,
-      "sexo": "feminino",
+      "sexo": "masculino",
       "plano": "Care Plus Essencial",
       "condicoes_ativas": [
         {
@@ -627,9 +627,9 @@
         "pressao_arterial": "126x80 mmHg",
         "frequencia_cardiaca": "72 bpm",
         "saturacao_oxigenio": "98%",
-        "peso_kg": 65,
-        "altura_cm": 162,
-        "imc": 24.8
+        "peso_kg": 75,
+        "altura_cm": 175,
+        "imc": 24.5
       }
     }
   ]

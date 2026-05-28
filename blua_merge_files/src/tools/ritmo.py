@@ -48,7 +48,7 @@ def analisar_ritmo_cardiaco(
     Analisa ritmo cardíaco do paciente.
 
     Modo preferido (live):
-        analisar_ritmo_cardiaco(paciente_id="BENEF-MARIA")
+        analisar_ritmo_cardiaco(paciente_id="GABRIEL")
         → puxa último batimento + sumário dos últimos 5 min do CardioMonitor.
 
     Modo legado (mock):

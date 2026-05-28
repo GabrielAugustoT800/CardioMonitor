@@ -59,7 +59,7 @@ def _executar_tool(nome: str, argumentos: dict) -> str:
 def agente_suporte_clinico(
     mensagem: str,
     historico: list[dict],
-    beneficiario_id: str = "BENEF-MARIA",
+    beneficiario_id: str = "GABRIEL",
 ) -> dict:
     """Responde dúvidas sobre medicação ativa, interações e agendamentos."""
     system = SYSTEM_PROMPT_SUPORTE + f"\n\nBENEFICIÁRIO ATIVO: {beneficiario_id}"

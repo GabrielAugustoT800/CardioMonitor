@@ -64,7 +64,7 @@ print("[dash_app] Grafo pronto.")
 
 # Lista de beneficiários disponíveis
 BENEFICIARIOS = [
-    {"label": "Maria Silva — 34a (PDF Sprint 2)", "value": "BENEF-MARIA"},
+    {"label": "Gabriel — 34a (referência do dashboard)", "value": "GABRIEL"},
     {"label": "João Carlos — 58a, HAS+arritmia", "value": "BENEF-001"},
     {"label": "Maria Aparecida — 67a, IC+FA", "value": "BENEF-002"},
     {"label": "Roberto Silva — 42a", "value": "BENEF-003"},
@@ -137,7 +137,7 @@ def topbar():
 def patient_card(perfil_id: str):
     """Card de paciente — varia conforme seleção."""
     perfis_info = {
-        "BENEF-MARIA": ("MS", "Maria Silva Fictícia", "34a · feminino", "HAS controlada · Losartana 50mg"),
+        "GABRIEL": ("GF", "Gabriel Fictício", "34a · masculino", "HAS controlada · Losartana 50mg"),
         "BENEF-001": ("JC", "João Carlos Fictício", "58a · masculino", "HAS · arritmia sinusal"),
         "BENEF-002": ("MA", "Maria Aparecida Fictícia", "67a · feminino", "IC fração reduzida · FA"),
         "BENEF-003": ("RS", "Roberto Silva Fictício", "42a · masculino", "HAS leve"),
@@ -264,7 +264,7 @@ app.layout = html.Div([
                     dcc.Dropdown(
                         id="beneficiario-select",
                         options=BENEFICIARIOS,
-                        value="BENEF-MARIA",
+                        value="GABRIEL",
                         clearable=False,
                         style={"marginBottom": "12px"},
                     ),
@@ -383,7 +383,7 @@ def _hitl_placeholders():
     Input("beneficiario-select", "value"),
 )
 def atualizar_card_paciente(beneficiario_id):
-    return patient_card(beneficiario_id or "BENEF-MARIA")
+    return patient_card(beneficiario_id or "GABRIEL")
 
 
 @callback(

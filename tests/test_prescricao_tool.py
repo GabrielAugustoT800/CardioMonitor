@@ -31,7 +31,7 @@ class TestTagInviolavel:
         """Sucesso normal deve emitir tag no status."""
         with patch("src.tools.prescricao._consulta_recente", return_value=True):
             r = sugerir_rascunho_prescricao(
-                paciente_id="BENEF-MARIA",
+                paciente_id="GABRIEL",
                 indicacao_clinica="HAS",
                 medicamentos_sugeridos=[
                     {"nome": "Losartana Potássica", "dose": "50mg",
@@ -43,7 +43,7 @@ class TestTagInviolavel:
     def test_tag_em_alergia(self):
         """Recusa por alergia também leva a tag."""
         r = sugerir_rascunho_prescricao(
-            paciente_id="BENEF-MARIA",
+            paciente_id="GABRIEL",
             indicacao_clinica="HAS",
             medicamentos_sugeridos=[
                 {"nome": "Dipirona", "dose": "500mg", "frequencia": "8/8h"}
@@ -57,7 +57,7 @@ class TestTagInviolavel:
         """Sem consulta recente — recusa com tag."""
         with patch("src.tools.prescricao._consulta_recente", return_value=False):
             r = sugerir_rascunho_prescricao(
-                paciente_id="BENEF-MARIA",
+                paciente_id="GABRIEL",
                 indicacao_clinica="HAS",
                 medicamentos_sugeridos=[
                     {"nome": "Losartana Potássica", "dose": "50mg",
@@ -70,7 +70,7 @@ class TestTagInviolavel:
     def test_tag_em_fora_escopo_cv(self):
         """Medicamento fora do escopo CV — recusa com tag."""
         r = sugerir_rascunho_prescricao(
-            paciente_id="BENEF-MARIA",
+            paciente_id="GABRIEL",
             indicacao_clinica="infecção urinária",
             medicamentos_sugeridos=[
                 {"nome": "Amoxicilina", "dose": "500mg", "frequencia": "8/8h"}
@@ -82,7 +82,7 @@ class TestTagInviolavel:
     def test_tag_em_lista_vazia(self):
         """Lista vazia — recusa com tag."""
         r = sugerir_rascunho_prescricao(
-            paciente_id="BENEF-MARIA",
+            paciente_id="GABRIEL",
             indicacao_clinica="HAS",
             medicamentos_sugeridos=[],
         )
@@ -182,12 +182,12 @@ class TestAlergias:
 class TestFluxoCompleto:
     """Cenários end-to-end mais realistas."""
 
-    def test_renovacao_losartana_maria(self):
-        """Maria pós-consulta recente: deve aprovar."""
-        # Mock para garantir que consulta de Maria (2026-03-12) é considerada recente
+    def test_renovacao_losartana_gabriel(self):
+        """Gabriel pós-consulta recente: deve aprovar."""
+        # Mock para garantir que consulta de Gabriel (2026-03-12) é considerada recente
         with patch("src.tools.prescricao._consulta_recente", return_value=True):
             r = sugerir_rascunho_prescricao(
-                paciente_id="BENEF-MARIA",
+                paciente_id="GABRIEL",
                 indicacao_clinica="manutenção do tratamento de hipertensão arterial controlada",
                 medicamentos_sugeridos=[
                     {"nome": "Losartana Potássica", "dose": "50mg",
@@ -199,10 +199,10 @@ class TestFluxoCompleto:
         assert r.get("approved_by_medico") is False
         assert "Resolução CFM 2.314/22" in r.get("aviso_legal", "")
 
-    def test_paracetamol_pra_maria_recusado_por_escopo(self):
+    def test_paracetamol_pra_gabriel_recusado_por_escopo(self):
         """Mesmo com consulta recente, paracetamol é fora do escopo CV."""
         r = sugerir_rascunho_prescricao(
-            paciente_id="BENEF-MARIA",
+            paciente_id="GABRIEL",
             indicacao_clinica="dor de cabeça",
             medicamentos_sugeridos=[
                 {"nome": "Paracetamol", "dose": "750mg", "frequencia": "6/6h"}

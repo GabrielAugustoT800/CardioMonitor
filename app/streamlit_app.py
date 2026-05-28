@@ -60,7 +60,7 @@ if "grafo" not in st.session_state:
 # ============================================================================
 
 BENEFICIARIOS = {
-    "BENEF-MARIA": "Maria Silva — 34a (PDF Sprint 2)",
+    "GABRIEL": "Gabriel — 34a (referência do dashboard)",
     "BENEF-001": "João Carlos — 58a, HAS+arritmia",
     "BENEF-002": "Maria Aparecida — 67a, IC+FA",
     "BENEF-003": "Roberto Silva — 42a",

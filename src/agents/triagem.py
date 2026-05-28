@@ -56,7 +56,7 @@ def _executar_tool(nome: str, argumentos: dict) -> str:
 def agente_triagem(
     mensagem: str,
     historico: list[dict],
-    beneficiario_id: str = "BENEF-MARIA",
+    beneficiario_id: str = "GABRIEL",
 ) -> dict:
     """Estratifica risco CV e encaminha (autocuidado / consulta / SAMU)."""
     system = SYSTEM_PROMPT_TRIAGEM + f"\n\nBENEFICIÁRIO ATIVO: {beneficiario_id}"
