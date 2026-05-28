@@ -154,7 +154,7 @@ def _observacao_contextualizada(
 
     partes = []
 
-    # Linha 1 — diagnóstico curto
+    # Linha 1 — observação curta da variabilidade
     if classificacao == "irregular":
         partes.append(
             f"Variabilidade ALTA: {irr_pct}% dos batimentos na janela "
