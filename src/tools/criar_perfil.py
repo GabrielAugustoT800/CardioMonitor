@@ -81,14 +81,19 @@ def criar_perfil_paciente(
     if not confirmacao:
         return {
             "preview": True,
-            "mensagem": "Confirme os dados antes de criar o perfil:",
+            "mensagem": (
+                "Confirme os dados antes de criar o perfil. "
+                "ATENÇÃO: medicações e alergias serão registradas como "
+                "AUTO-DECLARAÇÃO do paciente (não-verificadas contra "
+                "prontuário médico). Confirme se a lista está exata."
+            ),
             "dados": {
                 "nome": nome.strip(),
                 "idade": idade,
                 "sexo": sexo,
                 "condicoes": [c["nome"] for c in cond_norm],
-                "medicacoes": [m["nome"] for m in med_norm],
-                "alergias": alergias or [],
+                "medicacoes_auto_declaradas": [m["nome"] for m in med_norm],
+                "alergias_auto_declaradas": alergias or [],
             },
             "proxima_acao": (
                 "Após confirmação do usuário, chame esta tool de novo com "
@@ -103,8 +108,20 @@ def criar_perfil_paciente(
             idade=idade,
             sexo=sexo,
             condicoes=cond_norm,
-            medicacoes=med_norm,
-            alergias=alergias or [],
+            medicacoes=[
+                {**m, "fonte": "auto-declarado-chatbot", "verificado": False}
+                for m in med_norm
+            ],
+            alergias=[
+                {
+                    "substancia": a,
+                    "reacao": "não especificada",
+                    "gravidade": "não especificada",
+                    "fonte": "auto-declarado-chatbot",
+                    "verificado": False,
+                }
+                for a in (alergias or [])
+            ],
         )
     except ValueError as exc:
         return {"erro": str(exc)}
@@ -114,13 +131,17 @@ def criar_perfil_paciente(
         "paciente_id": novo["id"],
         "mensagem": (
             f"Perfil criado para {novo['nome']} (ID {novo['id']}). "
-            f"Disponível agora no CardioMonitor para iniciar sessão de PPG."
+            f"Disponível agora no CardioMonitor. "
+            f"Lembrete: medicações e alergias foram registradas como "
+            f"auto-declaração e devem ser confirmadas com profissional "
+            f"de saúde antes de qualquer uso clínico."
         ),
         "proximos_passos": [
             "Selecione o paciente no dropdown do /monitor",
             "Inicie sessão de simulação ou conecte o ESP32",
             "Os batimentos capturados ficarão automaticamente vinculados "
             f"ao ID {novo['id']}",
+            "Validar medicações auto-declaradas com prescritor responsável",
         ],
         "perfil": novo,
     }
