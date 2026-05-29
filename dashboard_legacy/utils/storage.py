@@ -25,7 +25,9 @@ CSV_COLUMNS = [
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
+# TODO Passo 8 (INTEGRACAO_ARRHYTHMIAMONITOR.md §3.2): usar shared.paths.TELEMETRY_CSV
 DEFAULT_CSV = DATA_DIR / "cardiac_data.csv"
+# TODO Passo 8 (INTEGRACAO_ARRHYTHMIAMONITOR.md §3.2): usar shared.paths.GABRIEL_CSV
 GABRIEL_CSV = DATA_DIR / "gabriel_data.csv"
 
 

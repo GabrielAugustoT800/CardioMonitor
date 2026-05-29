@@ -49,7 +49,20 @@ DATA_DIR: Path = PROJECT_ROOT / "data"
 PROFILES_JSON: Path = DATA_DIR / "mocks" / "perfis_clinicos.json"
 
 # Telemetria PPG ao vivo — origem: dashboard (cardiac_data.csv)
-TELEMETRY_CSV: Path = DATA_DIR / "cardiac_data.csv"
+# Override via BLUA_TELEMETRY_CSV permite apontar pra outro arquivo
+# (ex.: ambiente de teste, integração futura com Azure Blob mount).
+TELEMETRY_CSV: Path = Path(
+    os.environ.get(
+        "BLUA_TELEMETRY_CSV",
+        str(DATA_DIR / "cardiac_data.csv"),
+    )
+)
 
 # Dataset de referência do dashboard (200 batimentos do paciente "Gabriel")
-GABRIEL_CSV: Path = DATA_DIR / "gabriel_data.csv"
+# Override via BLUA_GABRIEL_CSV — análogo a BLUA_TELEMETRY_CSV.
+GABRIEL_CSV: Path = Path(
+    os.environ.get(
+        "BLUA_GABRIEL_CSV",
+        str(DATA_DIR / "gabriel_data.csv"),
+    )
+)

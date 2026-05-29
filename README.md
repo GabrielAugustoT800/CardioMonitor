@@ -19,3 +19,12 @@ Em construção. Plano de integração em `PLANO_MERGE.md`.
 
 ## Como rodar (após Passo 5 do PLANO_MERGE.md)
 Ver `PLANO_MERGE.md` → Passo 7 (smoke tests).
+
+## Configuração via variáveis de ambiente
+
+| Variável | Default | Uso |
+|----------|---------|-----|
+| `DASHSCOPE_API_KEY` | — (**obrigatória**) | Chave da API DashScope/Qwen. Sem ela, o chatbot não inicializa. Ver `.env.example`. |
+| `BLUA_TELEMETRY_CSV` | `data/cardiac_data.csv` (opcional) | Path do CSV de telemetria ao vivo do dashboard. Defina para apontar pra outro arquivo (ex.: ambiente de teste, integração futura com Azure Blob mount). |
+| `BLUA_GABRIEL_CSV` | `data/gabriel_data.csv` (opcional) | Path do CSV de referência do paciente Gabriel (200 batimentos). |
+| `BLUA_ROOT` | pasta do projeto (opcional) | Raiz do projeto pra resolução de paths. Útil em testes e deployments com volumes montados. |
