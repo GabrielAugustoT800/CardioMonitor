@@ -48,3 +48,8 @@ _ref_bluadiagnostics/
 
 # Backups da aplicacao da Sprint 2 (locais, nao versionar)
 _backup_sprint2/
+
+# Agendamentos persistidos pelo agendar_teleconsulta
+# (dado dinâmico — apenas estrutura é versionada via .gitkeep)
+data/consultas/*
+!data/consultas/.gitkeep

@@ -228,6 +228,10 @@
         "motivo": {
           "type": "string",
           "description": "Resumo clínico do motivo do agendamento gerado pelo agente. Será enviado ao médico como briefing pré-consulta. Ex: 'Paciente relata palpitações recorrentes. Ritmo analisado como irregular em 4 de 5 registros. Histórico de arritmia sinusal.'"
+        },
+        "paciente_id": {
+          "type": "string",
+          "description": "ID do paciente vinculado à sessão (BENEF-XXX). Quando fornecido, o agendamento é persistido vinculado ao paciente. Quando ausente, é persistido como agendamento sem paciente vinculado. Campo opcional — agents que ainda não foram atualizados pra passar este campo continuam funcionando normalmente."
         }
       },
       "required": [
