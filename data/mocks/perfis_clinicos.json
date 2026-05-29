@@ -559,78 +559,93 @@
     },
     {
       "id": "GABRIEL",
-      "nome": "Gabriel Fictício",
-      "idade": 34,
+      "nome": "Gabriel Oliveira",
+      "idade": 38,
       "sexo": "masculino",
-      "plano": "Care Plus Essencial",
+      "plano": "Care Plus Premium",
+      "score_risco_cardiovascular": "moderado",
+      "cha2ds2_va": 2,
       "condicoes_ativas": [
         {
-          "nome": "Hipertensão arterial sistêmica",
+          "cid": "I48.0",
+          "nome": "Fibrilação atrial paroxística",
+          "desde": "2021-04-15",
+          "status": "em controle"
+        },
+        {
           "cid": "I10",
-          "status": "controlada",
-          "desde": "2024-06-15"
+          "nome": "Hipertensão arterial sistêmica",
+          "desde": "2018-06-15",
+          "status": "controlada"
+        },
+        {
+          "cid": "I47.1",
+          "nome": "Taquicardia supraventricular recorrente",
+          "desde": "2023-06-15",
+          "status": "histórico — episódios paroxísticos"
         }
       ],
-      "score_risco_cardiovascular": "baixo",
       "medicacoes_ativas": [
+        {
+          "nome": "Apixabana",
+          "dose": "5mg",
+          "frequencia": "2x ao dia",
+          "indicacao": "Anticoagulação para FA paroxística",
+          "inicio": "2021-04-20"
+        },
+        {
+          "nome": "Metoprolol succinato",
+          "dose": "50mg",
+          "frequencia": "1x ao dia",
+          "indicacao": "Controle de FC em FA",
+          "inicio": "2021-04-20"
+        },
         {
           "nome": "Losartana Potássica",
           "dose": "50mg",
           "frequencia": "1x ao dia",
           "indicacao": "Hipertensão arterial",
-          "inicio": "2024-06-15"
+          "inicio": "2018-06-15"
         }
       ],
-      "alergias": [
-        {
-          "substancia": "Dipirona",
-          "reacao": "urticária",
-          "gravidade": "leve"
-        }
-      ],
+      "alergias": [],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-04-22",
+        "pressao_arterial": "128x82 mmHg",
+        "frequencia_cardiaca": "74 bpm",
+        "saturacao_oxigenio": "98%",
+        "peso_kg": 78,
+        "altura_cm": 178,
+        "imc": 24.6
+      },
       "consultas": {
         "ultima": {
-          "data": "2026-03-12",
+          "data": "2026-04-22",
           "especialidade": "Cardiologia",
-          "medico": "Dr. João Almeida — CRM 45678/SP",
-          "observacoes": "PA controlada com Losartana 50mg. Manter conduta. MAPA 24h normal. Orientado controle dietético e atividade física regular. Retorno em 6 meses.",
-          "plataforma": "Telemedicina — Blua"
+          "medico": "Dr. Gregory House — CRM 12345/SP",
+          "observacoes": "FA paroxística em controle. Sem novos episódios documentados nos últimos 60 dias. Anticoagulação mantida.",
+          "plataforma": "Teleconsulta Blua"
         },
         "proxima": {
-          "data": "2026-09-10",
+          "data": "2026-09-22",
           "especialidade": "Cardiologia",
           "status": "agendada"
         }
       },
       "exames_recentes": [
         {
-          "tipo": "MAPA 24h",
-          "data": "2026-03-01",
-          "resultado": "Média 24h: 128x82 mmHg. Descenso noturno preservado (15%).",
-          "laudo": "Hipertensão arterial controlada com tratamento atual"
+          "data": "2026-04-10",
+          "tipo": "Holter 24h",
+          "resultado": "Ritmo sinusal predominante. Episódios isolados de FA paroxística autolimitados.",
+          "laudo": "FA paroxística — manter anticoagulação"
         },
         {
-          "tipo": "Eletrocardiograma de repouso",
-          "data": "2026-03-12",
-          "resultado": "Ritmo sinusal regular, FC 72 bpm. Sem alterações isquêmicas.",
-          "laudo": "ECG dentro da normalidade"
-        },
-        {
-          "tipo": "Perfil lipídico",
-          "data": "2026-02-28",
-          "resultado": "Colesterol total 178, HDL 58, LDL 102, Triglicerídeos 92",
-          "laudo": "Perfil lipídico adequado"
+          "data": "2026-03-15",
+          "tipo": "Ecocardiograma transtorácico",
+          "resultado": "Fração de ejeção 60%. Átrio esquerdo levemente aumentado.",
+          "laudo": "Compatível com FA"
         }
-      ],
-      "sinais_vitais_ultimo_registro": {
-        "data": "2026-03-12",
-        "pressao_arterial": "126x80 mmHg",
-        "frequencia_cardiaca": "72 bpm",
-        "saturacao_oxigenio": "98%",
-        "peso_kg": 75,
-        "altura_cm": 175,
-        "imc": 24.5
-      }
+      ]
     }
   ]
 }
