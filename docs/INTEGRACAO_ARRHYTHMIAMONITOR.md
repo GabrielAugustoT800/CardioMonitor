@@ -1,8 +1,16 @@
-# Notas para Integração Futura com `ArrhythmiaMonitor`
+# Notas para Integração Futura do `ArrhythmiaMonitor` (no blua-cardio)
 
 Documento de referência para a próxima fase do projeto, quando o
-chatbot do `blua-cardio` (estado atual) for integrado ao repositório
-`ArrhythmiaMonitor` (https://github.com/GabrielAugustoT800/ArrhythmiaMonitor).
+**conteúdo do `ArrhythmiaMonitor` (hardware ESP32, API ML, dashboard
+atualizado, Azure Blob) for trazido para dentro do `blua-cardio`**
+(https://github.com/GabrielAugustoT800/ArrhythmiaMonitor).
+
+**Direção da integração:** o trabalho continua acontecendo dentro do
+repositório local `blua-cardio`. O conteúdo do `ArrhythmiaMonitor`
+upstream é copiado/adaptado para cá — não há fusão de repositórios.
+O push final do projeto consolidado para um remoto (potencialmente
+como branch do `ArrhythmiaMonitor`) é etapa separada feita pelo
+usuário sozinho, fora do escopo de assistência.
 
 **Status:** este documento descreve o estado em 2026-05-28. Atualizar
 se o `ArrhythmiaMonitor` mudar significativamente antes da integração.
@@ -15,13 +23,16 @@ Sistema cardíaco em 3 camadas:
 - **Hardware:** ESP32 + MAX30100 capturando PPG.
 - **API ML:** FastAPI com Random Forest treinado, deployable no Azure.
 - **Dashboard:** Dash multi-pages (already `use_pages=True`).
-- **Pasta `agent/` vazia:** placeholder para o chatbot deste projeto.
+- **Pasta `agent/` vazia:** placeholder no `ArrhythmiaMonitor` upstream
+  — sinaliza que a equipe deles previa um chatbot. Será descartada
+  quando trouxermos o conteúdo deles pra cá (chatbot já vive em `src/`
+  aqui no `blua-cardio`).
 
 ### Arquivos relevantes para a integração
 
 | Arquivo no `ArrhythmiaMonitor` | Relevância |
 |--------------------------------|------------|
-| `dashboard/app.py` | Entrypoint Dash multi-pages. Substitui nosso `unified_app.py`. |
+| `dashboard/app.py` | Entrypoint Dash multi-pages do `ArrhythmiaMonitor`. Referência para evoluir `app/unified_app.py` daqui (mesclar topbar HUD, ajustes de navegação, etc.). |
 | `dashboard/pages/{home,monitor,analysis,gabriel}.py` | Páginas já com `dash.register_page`. |
 | `dashboard/utils/storage.py` | Função `load_blob(tail=50)` que o chatbot deve usar. |
 | `dashboard/utils/theme.py` | Tokens HUD: PRIMARY_BLUE, ACCENT_CYAN, etc. |
@@ -29,7 +40,7 @@ Sistema cardíaco em 3 camadas:
 | `api.py` (raiz) | Endpoint `POST /prever` que substitui regra heurística do `analisar_ritmo_cardiaco`. |
 | `predicao.py` (raiz) | Pipeline ML com `prever_salvar()`. |
 | `modelo_predicao.pkl` (raiz) | Random Forest treinado. |
-| `agent/` (vazio) | Onde o chatbot vai entrar. |
+| `agent/` (vazio) | Placeholder do upstream — não vai ser usado (chatbot já vive em `src/` daqui). |
 
 ---
 
@@ -66,23 +77,32 @@ Sistema cardíaco em 3 camadas:
 
 ## 3. Tarefas previstas na integração
 
-Quando chegar a hora de fundir os projetos:
+Quando chegar a hora de trazer o conteúdo do `ArrhythmiaMonitor` para dentro do `blua-cardio`:
 
-### 3.1 Mover chatbot para `agent/`
+### 3.1 Trazer hardware, API ML e dashboard pra dentro do `blua-cardio`
 
-Conforme placeholder vazio no `ArrhythmiaMonitor`. Estrutura proposta:
+O conteúdo relevante do `ArrhythmiaMonitor` é copiado/adaptado para
+pastas novas dentro do `blua-cardio`. Estrutura final esperada:
 ```
-ArrhythmiaMonitor/
-├── agent/
-│   ├── src/             # de src/ do blua-cardio
-│   ├── prompts/         # de prompts/ do blua-cardio
-│   ├── knowledge_base/  # de knowledge_base/ do blua-cardio
-│   ├── chroma_db/       # de chroma_db/ do blua-cardio
-│   └── tests/           # de tests/ do blua-cardio
-├── dashboard/           # já existe
-├── api.py
+blua-cardio/
+├── src/                 # chatbot LangGraph (já existe — intocado)
+├── prompts/             # já existe — intocado
+├── knowledge_base/      # já existe — intocado
+├── chroma_db/           # já existe — intocado
+├── tests/               # já existe — intocado
+├── pages/               # já existe (Passo 8) — recebe ajustes do dashboard upstream
+├── app/unified_app.py   # já existe (Passo 8) — recebe ajustes de topbar/tema
+├── shared/              # já existe — intocado
+├── utils/               # já existe — recebe utilitários do dashboard upstream
+├── data/                # já existe — recebe novos mocks/datasets se necessário
+├── firmware/            # NOVO — vem de ArrhythmiaMonitor (esp32 firmware .ino)
+├── api_ml/              # NOVO — vem de ArrhythmiaMonitor/{api.py, predicao.py, modelo_predicao.pkl}
 └── ...
 ```
+
+Nomes finais das pastas novas (`firmware/`, `api_ml/`, etc.) decididos
+na hora da integração — esse esqueleto é orientativo, não normativo.
+A pasta `agent/` do upstream é descartada (chatbot já está em `src/`).
 
 ### 3.2 Substituir tools por adaptadores Azure
 
@@ -105,12 +125,18 @@ O `dashboard/utils/theme.py` define paleta, tipografia e componentes (`hud_panel
 
 ## 4. Decisões pendentes
 
-Quando chegar à fase de integração, decidir:
+**Já decidido (registrado aqui pra evitar revisitação):**
+- **Repositório de trabalho:** `blua-cardio` (local). O conteúdo do
+  `ArrhythmiaMonitor` é trazido pra cá. Push final do projeto
+  consolidado para um remoto (possivelmente como branch do
+  `ArrhythmiaMonitor`) é etapa separada feita pelo usuário sozinho,
+  fora do escopo da assistência.
 
-1. **Repositório final:** `ArrhythmiaMonitor` absorve `blua-cardio` (recomendado pela estrutura placeholder em `agent/`) ou dois repos separados conversando via API REST?
-2. **Memória de chat:** manter LangGraph MemorySaver (server-side) ou migrar pra `dcc.Store(storage_type="session")` (client-side, conforme especificação)?
-3. **Persistência de perfis:** o registry interno (`perfis_clinicos.json`) continua no chatbot ou migra pro Blob também?
-4. **CHA₂DS₂-VA do Gabriel:** já é campo no `perfis_clinicos.json` (após R1) ou só display no `pages/gabriel.py`?
+**Quando chegar à fase de integração, decidir:**
+
+1. **Memória de chat:** manter LangGraph MemorySaver (server-side) ou migrar pra `dcc.Store(storage_type="session")` (client-side, conforme especificação)?
+2. **Persistência de perfis:** o registry interno (`perfis_clinicos.json`) continua local ou migra pro Azure Blob também?
+3. **CHA₂DS₂-VA do Gabriel:** já é campo no `perfis_clinicos.json` (após R1) ou só display no `pages/gabriel.py`?
 
 Decisões a tomar no início da próxima fase, não agora.
 
