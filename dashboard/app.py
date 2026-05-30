@@ -61,6 +61,24 @@ def _topbar():
         ]),
         html.Nav(className="hud-topbar__nav", id="hud-nav", children=_nav_links()),
         html.Div(className="hud-topbar__telemetry", children=[
+            # C13: dropdown de perfil ativo (atalho de navegação contextual).
+            # Posicionado dentro da seção telemetria pra preservar grid CSS
+            # upstream (auto/1fr/auto — 3 colunas). 4º elemento direto no
+            # Header quebraria o grid.
+            html.Div(className="tel", children=[
+                html.Span("PERFIL", className="lbl"),
+                dcc.Dropdown(
+                    id="topbar-perfil-dropdown",
+                    options=[
+                        {"label": "Gabriel", "value": "GABRIEL"},
+                        {"label": "Meu Perfil", "value": "MEU_PERFIL"},
+                    ],
+                    value="GABRIEL",
+                    clearable=False,
+                    className="hud-topbar__dropdown",
+                    style={"minWidth": "140px", "marginLeft": "8px"},
+                ),
+            ]),
             html.Div(className="tel", children=[
                 html.Span(className="sig-dot"),
                 html.Span("LINK", className="lbl"),
@@ -97,6 +115,12 @@ app.layout = html.Div(className="app-shell", children=[
         "flags_safety_anteriores": [],
         "ultimo_estado": None,
     }),
+    # C13: perfil ativo (atalho de navegação contextual entre Gabriel e Meu Perfil)
+    # storage_type="session" (não "local") — zera ao fechar aba pra evitar
+    # dessincronização entre dropdown (value="GABRIEL" hardcoded) e Store
+    # persistido com valor de sessão anterior. Telemetria (/monitor, /analise)
+    # NÃO consome este Store — upstream usa dataset Azure Blob único.
+    dcc.Store(id="perfil-ativo", data={"id": "GABRIEL"}, storage_type="session"),
     # CHAT INTEGRATION: audio element global pra alerts do chatbot
     html.Audio(id="audio-alert", src="/assets/alert.wav",
                className="blua-audio-alert", autoPlay=False),
@@ -137,6 +161,23 @@ def _nav_active(pathname):
             refresh=False,
         ))
     return links
+
+
+# C13: dropdown de perfil ativo (atalho de navegação contextual).
+# Atualiza dcc.Store(perfil-ativo) E navega pra rota do prontuário escolhido.
+# Não filtra telemetria — upstream usa dataset Azure Blob único sem coluna
+# patient (decisão tomada em H.A.3 após investigação).
+@app.callback(
+    Output("perfil-ativo", "data"),
+    Output("hud-url", "pathname", allow_duplicate=True),
+    Input("topbar-perfil-dropdown", "value"),
+    prevent_initial_call=True,
+)
+def _trocar_perfil_ativo(perfil_id):
+    if not perfil_id:
+        return dash.no_update, dash.no_update
+    rota = "/gabriel" if perfil_id == "GABRIEL" else "/meu-perfil"
+    return {"id": perfil_id}, rota
 
 
 if __name__ == "__main__":
