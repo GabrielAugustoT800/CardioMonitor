@@ -1,8 +1,24 @@
 """
-Ponte de telemetria: leitura do cardiac_data.csv do dashboard a partir
-de qualquer consumidor (em particular, das tools do chatbot).
+Bridge layer entre chatbot e telemetria do dashboard.
 
-Cuidados de design:
+Responsabilidade: filtragem de batimentos por paciente_id do chatbot.
+Mapa _ALIAS resolve o mismatch entre como o /monitor grava (patient="live"
+ou similar) e como o chatbot referencia (paciente_id="GABRIEL").
+
+Decisão arquitetural (C1 revisado, integração ArrhythmiaMonitor maio/2026):
+- Este módulo MANTÉM pd.read_csv raw (não delega pra dashboard.utils.storage).
+- Razão: dashboard/utils/storage.py upstream usa imports relativos
+  (`from utils.analysis import ...`) que só funcionam com dashboard/ no
+  sys.path. Delegar leitura de CSV daqui forçaria shared/ a mexer no
+  sys.path, violando o conceito de bridge layer self-contained.
+- A "duplicação" é trivial (1 linha pd.read_csv em cada lado) e os dois
+  módulos têm responsabilidades distintas:
+    - shared/telemetry_store.py: filtragem por paciente (bridge layer)
+    - dashboard/utils/storage.py: persistência CSV/Blob (CRUD)
+- Nenhuma das funções públicas deste módulo (load_recent_beats, latest_beat,
+  window_summary, register_alias) tem equivalente no upstream.
+
+Cuidados de design preservados do código original:
 - não cache o DataFrame inteiro: o CSV é apendado em tempo real pelo /monitor
   e qualquer cache stale entregaria dados antigos. Usamos pandas.read_csv
   direto — cache do filesystem do kernel já faz o trabalho pesado.
@@ -10,6 +26,10 @@ Cuidados de design:
   chatbot. O dashboard atualmente grava "live", "live-sim" e nomes próprios
   como "Gabriel". O mapa `_ALIAS` resolve esses casos sem alterar dados
   legados.
+
+Tools que consomem este módulo:
+- src/tools/ritmo.py (live mode do analisar_ritmo_cardiaco)
+- src/tools/telemetria.py (consultar_telemetria_dashboard)
 """
 from __future__ import annotations
 
