@@ -699,3 +699,41 @@ input.dash-input, input[type="number"], input[type="text"] {
 ::-webkit-scrollbar-track { background: var(--hud-bg-grid); }
 ::-webkit-scrollbar-thumb { background: var(--hud-border); border: 2px solid var(--hud-bg-grid); }
 ::-webkit-scrollbar-thumb:hover { background: var(--hud-blue-light); }
+
+/* =============================================================================
+   FIXES 8.9 — descobertos no smoke do Passo 8 (commit af5ad61)
+   Reaplicados sobre upstream do ArrhythmiaMonitor.
+   Não remover sem testar regressão das rotas em modo janela (não-fullscreen).
+   ============================================================================= */
+
+/* S1 — Card PACIENTE vazando texto à direita.
+   Causa: .hud-patient é CSS Grid com colunas auto/1fr/auto.
+   Item central com 1fr não tinha min-width: 0 — default é "auto"
+   (conteúdo intrínseco), impedindo encolhimento em viewport menor. */
+.hud-patient { min-width: 0; }
+.hud-patient > * { min-width: 0; overflow-wrap: break-word; }
+
+/* S2 + S3 — Mensagem do assistant e RAG · DOCUMENTOS extrapolando container.
+   Causa: .blua-bubble e .hud-panel__body sem overflow-wrap/word-break.
+   Palavras sem espaço (URLs, RED_FLAGS_CARDIOVASCULARES.MD, RERANK=4.01)
+   ficavam como "uma palavra" inteira e vazavam o container.
+   Nota: .blua-bubble será usada pelas chat bubbles em dashboard/pages/chat.py
+   (criado na Fase F). Regra fica órfã até lá, sem efeito colateral. */
+.blua-bubble,
+.hud-panel__body,
+.hud-patient__name,
+.hud-patient__meta {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* S4 — Faixa inferior da topbar não chega à borda direita em modo janela.
+   Causa: scrollbar vertical clássica do browser consome ~15-17px.
+   F11 (fullscreen) usa scrollbar overlay e não consome largura.
+   Modo janela consome, criando o "corte" na direita.
+   Fix: força scrollbar sempre presente (evita layout shift). */
+html { overflow-y: scroll; }
+
+/* Nota sobre S5: o sintoma S5 (duas topbars empilhadas em /chat) foi
+   resolvido removendo a função topbar() interna do chat.py — fix Python,
+   não CSS. Aplicado quando chat.py for trazido (Fase F). */
