@@ -19,6 +19,9 @@ from .prescricao import sugerir_rascunho_prescricao
 from .criar_perfil import criar_perfil_paciente
 from .telemetria import consultar_telemetria_dashboard
 
+# --- Feature 2 do README upstream do ArrhythmiaMonitor ---
+from .relatorio import gerar_relatorio_telemetria
+
 __all__ = [
     "consultar_historico_paciente",
     "verificar_interacoes_medicamentosas",
@@ -30,4 +33,5 @@ __all__ = [
     # novas
     "criar_perfil_paciente",
     "consultar_telemetria_dashboard",
+    "gerar_relatorio_telemetria",
 ]

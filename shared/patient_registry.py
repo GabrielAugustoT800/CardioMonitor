@@ -148,3 +148,41 @@ def create_patient(
     invalidate_caches()
 
     return deepcopy(novo)
+
+
+def update_patient(patient_id: str, **fields: Any) -> dict[str, Any]:
+    """
+    Atualiza campos de um paciente existente no JSON.
+
+    Args:
+        patient_id: ID do paciente a atualizar (deve existir).
+        **fields: campos a sobrescrever (nome, idade, sexo, nascimento, etc).
+            Aceita qualquer chave válida do schema. Para "limpar" um campo
+            (voltar pro estado pré-criação), passe explicitamente None
+            (ex: update_patient("MEU_PERFIL", nome=None)).
+
+    Raises:
+        ValueError: se patient_id não existir no JSON.
+
+    Returns:
+        dict do paciente atualizado (deepcopy — caller pode mutar).
+
+    J.1.b da Fase J — backend pro formulário UI de criação MEU_PERFIL.
+    """
+    with _WRITE_LOCK:
+        data = _load_raw()
+        beneficiarios = data.get("beneficiarios", [])
+        idx = next(
+            (i for i, b in enumerate(beneficiarios) if b.get("id") == patient_id),
+            None,
+        )
+        if idx is None:
+            raise ValueError(f"Paciente {patient_id!r} não encontrado")
+
+        beneficiarios[idx].update(fields)
+        _atomic_write(data)
+
+    # Fora do lock — invalidar caches downstream
+    invalidate_caches()
+
+    return deepcopy(beneficiarios[idx])

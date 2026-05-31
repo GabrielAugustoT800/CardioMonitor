@@ -1,0 +1,693 @@
+"""
+BluaDiagnostics — Interface Dash (Sprint 2).
+
+Aplicação web Dash com:
+- Chat conversacional cardiovascular
+- Painel técnico em tempo real: pre_safety, supervisor, trajetória,
+  RAG (chunks + scores), tools chamadas, safety flags, confidence
+- Suporte HITL (botão aprovar/rejeitar rascunho de prescrição)
+- Indicador de backend (DashScope / Ollama) com troca via env var
+- Alerta sonoro para red flag (alert.wav)
+
+Execução:
+    python app/dash_app.py
+    # Abre em http://localhost:8050
+
+Variáveis ambiente respeitadas:
+- DASHSCOPE_API_KEY (modo cloud)
+- LLM_BACKEND=dashscope|ollama
+- QWEN_OLLAMA_MODEL=qwen2.5:14b (default)
+- LANGSMITH_API_KEY (observabilidade opcional)
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+import uuid
+from pathlib import Path
+
+# Garantir raiz do projeto no path.
+# Arquivo está em dashboard/pages/chat.py:
+#   parents[0] = dashboard/pages/
+#   parents[1] = dashboard/
+#   parents[2] = raiz do projeto  <-- queremos esta
+# Necessário pra que "from src.graph import ..." e "from colab_setup import ..."
+# resolvam corretamente.
+_RAIZ = Path(__file__).resolve().parents[2]
+if str(_RAIZ) not in sys.path:
+    sys.path.insert(0, str(_RAIZ))
+
+# Bootstrap ambiente (LangSmith se configurado)
+try:
+    from colab_setup import preparar_ambiente
+    preparar_ambiente(exigir_chave=False)
+except Exception as exc:
+    print(f"[dash_app] Bootstrap aviso: {exc}")
+
+import dash
+from dash import (
+    html, dcc, callback, clientside_callback,
+    Input, Output, State, no_update, ctx,
+)
+import dash_bootstrap_components as dbc
+
+# Registro da página no app multi-pages.
+# path='/chat' (C3 da integração ArrhythmiaMonitor): raiz '/' é home.py
+# upstream agora; chat fica em /chat.
+# order=5: vem depois de home(0), monitor(1), analise(2), gabriel(3),
+# deixando order=4 livre pra /meu-perfil (C13/H futuro).
+dash.register_page(
+    __name__,
+    path="/chat",
+    name="Chat",
+    order=5,
+)
+
+from src.graph import construir_grafo, executar_turno, aprovar_rascunho_prescricao
+from shared.patient_registry import list_patients
+
+# =============================================================================
+# Configuração e bootstrap do grafo
+# =============================================================================
+
+BACKEND_ATUAL = os.getenv("LLM_BACKEND", "dashscope")
+MODELO_ATUAL = (os.getenv("QWEN_DASHSCOPE_MODEL", "qwen-plus")
+                if BACKEND_ATUAL == "dashscope"
+                else os.getenv("QWEN_OLLAMA_MODEL", "qwen2.5:14b"))
+
+# Construir grafo uma única vez na inicialização
+print("[dash_app] Construindo grafo LangGraph...")
+GRAFO = construir_grafo()
+print("[dash_app] Grafo pronto.")
+
+# Lista de beneficiários disponíveis (J.7 — Fase J).
+#
+# Filtro híbrido: Gabriel + MEU_PERFIL + qualquer perfil criado via
+# chatbot (BENEF-NEW-XXX). Exclui BENEFs canônicos (BENEF-001 a
+# BENEF-CV-003 — dados de teste do blua-cardio original) pra alinhar
+# com o dropdown do topbar (que mostra só Gabriel + Meu Perfil).
+#
+# Carregado em module-import: mudanças no JSON refletem na próxima
+# reinicialização do app. Refresh em runtime (criar perfil via chatbot
+# ou UI/J.1) precisaria callback dinâmico — fora do escopo do J.7.
+def _format_label(p: dict) -> str:
+    nome = p.get("nome") or (
+        "Meu Perfil" if p["id"] == "MEU_PERFIL" else f"Perfil {p['id']}"
+    )
+    idade = p.get("idade")
+    return f"{nome} — {idade}a" if idade is not None else nome
+
+
+def _eh_perfil_visivel(p: dict) -> bool:
+    pid = p["id"]
+    return (
+        pid == "GABRIEL"
+        or pid == "MEU_PERFIL"
+        or pid.startswith("BENEF-NEW-")
+    )
+
+
+BENEFICIARIOS = [
+    {"label": _format_label(p), "value": p["id"]}
+    for p in list_patients()
+    if _eh_perfil_visivel(p)
+]
+
+# =============================================================================
+# App
+# =============================================================================
+# Removido pelo Passo 8.5 — a instância Dash() agora vive em app/unified_app.py
+# (entrypoint único multi-pages). Esta página apenas exporta `layout` e
+# decora callbacks com @callback (global, do módulo dash).
+
+# =============================================================================
+# Componentes auxiliares
+# =============================================================================
+
+def hud_panel(title: str, content, status: str = "ATIVO"):
+    """HUD panel com cantos em bracket — base do design system."""
+    return html.Div([
+        html.Span(className="hud-corner hud-corner--tl"),
+        html.Span(className="hud-corner hud-corner--tr"),
+        html.Span(className="hud-corner hud-corner--bl"),
+        html.Span(className="hud-corner hud-corner--br"),
+        html.Div([
+            html.Div([
+                html.Span(className="hud-panel__tick"),
+                html.Span(title, className="hud-panel__title"),
+            ], style={"display": "flex", "alignItems": "center", "gap": "10px"}),
+            html.Span(status, className="hud-panel__status"),
+        ], className="hud-panel__header"),
+        html.Div(content, className="hud-panel__body"),
+    ], className="hud-panel")
+
+
+def patient_card(perfil_id: str):
+    """Card de paciente — varia conforme seleção."""
+    perfis_info = {
+        "GABRIEL": ("GF", "Gabriel Fictício", "34a · masculino", "HAS controlada · Losartana 50mg"),
+        "BENEF-001": ("JC", "João Carlos Fictício", "58a · masculino", "HAS · arritmia sinusal"),
+        "BENEF-002": ("MA", "Maria Aparecida Fictícia", "67a · feminino", "IC fração reduzida · FA"),
+        "BENEF-003": ("RS", "Roberto Silva Fictício", "42a · masculino", "HAS leve"),
+        "BENEF-CV-001": ("HP", "Helena Pereira Fictícia", "70a · feminino", "IC fração reduzida"),
+    }
+    iniciais, nome, meta, condicoes = perfis_info.get(perfil_id,
+                                                       ("??", "—", "—", "—"))
+
+    return html.Div([
+        html.Div(iniciais, className="hud-patient__avatar"),
+        html.Div([
+            html.Div(nome, className="hud-patient__name"),
+            html.Div(meta, className="hud-patient__meta"),
+            html.Div(condicoes, className="hud-patient__meta",
+                     style={"marginTop": "6px", "color": "var(--hud-blue-dark)"}),
+        ]),
+        html.Div([
+            html.Span("ID", className="lbl",
+                     style={"fontSize": "0.65rem", "letterSpacing": "0.16em",
+                            "color": "var(--hud-muted)"}),
+            html.Div(perfil_id, style={"fontFamily": "'JetBrains Mono', monospace",
+                                         "color": "var(--hud-blue-dark)",
+                                         "fontWeight": "700"}),
+        ], style={"textAlign": "right"}),
+    ], className="hud-patient blua-patient-card")
+
+
+def chat_bubble(role: str, content: str, emergencia: bool = False):
+    """Bubble de chat."""
+    classes = "blua-bubble blua-bubble--" + ("user" if role == "user" else "assistant")
+    if emergencia:
+        classes += " blua-bubble--emergencia"
+    return html.Div([
+        html.Div(role.upper(), className="blua-bubble__role"),
+        dcc.Markdown(content, dangerously_allow_html=False,
+                     style={"margin": 0, "color": "inherit"}),
+    ], className=classes)
+
+
+def rag_chunk_card(doc: dict):
+    """Card mostrando um chunk de RAG recuperado."""
+    score_sim = doc.get("score_similaridade", 0)
+    score_rerank = doc.get("score_rerank")
+    score_display = f"sim={score_sim:.2f}"
+    if score_rerank is not None:
+        score_display += f" · rerank={score_rerank:.2f}"
+
+    return html.Div([
+        html.Div([
+            html.Span(f"#{doc.get('rank', '?')}  {doc.get('fonte', '?')}"),
+            html.Span(score_display, className="blua-rag-chunk__score"),
+        ], className="blua-rag-chunk__meta"),
+        html.Div(doc.get("chunk", "")[:220] + "…",
+                 className="blua-rag-chunk__text"),
+        html.Div(f"categoria: {doc.get('categoria', '—')}",
+                 style={"fontSize": "0.7rem", "color": "var(--hud-muted)",
+                        "marginTop": "4px", "fontFamily": "'JetBrains Mono', monospace"}),
+    ], className="blua-rag-chunk")
+
+
+def trajectory_display(trajetoria: list[str]):
+    """Visualiza trajetória de nós percorridos."""
+    if not trajetoria:
+        return html.Div("—", className="hud-tile__sub")
+
+    elementos = []
+    for i, no in enumerate(trajetoria):
+        is_current = (i == len(trajetoria) - 1)
+        classes = "blua-trajectory__step"
+        if is_current:
+            classes += " blua-trajectory__step--current"
+        elementos.append(html.Span(no, className=classes))
+        if i < len(trajetoria) - 1:
+            elementos.append(html.Span("→", className="blua-trajectory__arrow"))
+
+    return html.Div(elementos, className="blua-trajectory")
+
+
+def confidence_badge(nivel: str, score: float):
+    """Badge de confiança colorido."""
+    if not nivel:
+        return html.Div("—")
+    classes = f"blua-confidence blua-confidence--{nivel}"
+    return html.Div([
+        html.Span(nivel.upper()),
+        html.Span(f"{score:.2f}", style={"fontWeight": "400", "opacity": "0.75"}),
+    ], className=classes)
+
+
+# =============================================================================
+# Layout
+# =============================================================================
+
+layout = html.Div([
+    # Audio element (alert.wav) — ativado por callback quando red flag
+    html.Audio(id="audio-alert", src="/assets/alert.wav",
+               className="blua-audio-alert", autoPlay=False),
+
+    # J.4 — trigger de rehidratação. Dispara 1x após o layout montar
+    # (max_intervals=1) e força o callback _rehidratar_chat_area a popular
+    # chat-area com mensagens do session-data. Usar Interval em vez de
+    # Input(hud-url.pathname) porque o page_container do Dash multi-pages
+    # re-renderiza o layout DEPOIS dos callbacks que escutam pathname,
+    # sobrescrevendo o output. Interval só dispara quando o componente
+    # JÁ está montado, garantindo que o output sobrevive.
+    dcc.Interval(id="chat-rehidratar-tick", interval=300,
+                 max_intervals=1, n_intervals=0),
+
+    # Session storage — Passo 8.5: movido para o layout global do
+    # app/unified_app.py com storage_type="session" (preserva conversa
+    # entre páginas, reseta ao fechar a aba). Callbacks abaixo continuam
+    # referenciando "session-data" — Dash resolve Stores globais por ID
+    # independente da página ativa.
+
+    # Page container
+    html.Div([
+        # 3-column main grid
+        html.Div([
+            # Coluna esquerda — Paciente
+            html.Div([
+                hud_panel("PACIENTE", [
+                    dcc.Dropdown(
+                        id="beneficiario-select",
+                        options=BENEFICIARIOS,
+                        value="GABRIEL",
+                        clearable=False,
+                        style={"marginBottom": "12px"},
+                    ),
+                    html.Div(id="patient-card-container"),
+                    html.Button("NOVA SESSÃO", id="btn-nova-sessao",
+                                className="hud-btn hud-btn--ghost",
+                                style={"width": "100%", "marginTop": "16px"}),
+                ]),
+            ], style={"gridColumn": "span 3"}),
+
+            # Coluna central — Chat
+            html.Div([
+                hud_panel("DIÁLOGO CLÍNICO", [
+                    # dcc.Loading exibe um spinner sobre a chat-area enquanto
+                    # o callback principal estiver em andamento — feedback
+                    # visual instantaneo no clique de ENVIAR.
+                    dcc.Loading(
+                        id="chat-loading",
+                        type="circle",
+                        color="var(--hud-blue-dark, #007AB8)",
+                        children=html.Div(id="chat-area", className="blua-chat-area",
+                                 children=[
+                                     html.Div("Olá! Sou o BluaDiagnostics. "
+                                              "Pode me contar como está se sentindo "
+                                              "ou pedir informações sobre seu acompanhamento cardiovascular.",
+                                              className="hud-info",
+                                              style={"alignSelf": "center"})
+                                 ]),
+                    ),
+                    html.Div([
+                        dcc.Input(id="user-input", type="text",
+                                  placeholder="Digite sua mensagem…",
+                                  debounce=False, n_submit=0,
+                                  style={"width": "100%"}),
+                        html.Button("ENVIAR", id="btn-enviar",
+                                    className="hud-btn"),
+                    ], className="blua-input-row"),
+                    # hitl-container: placeholders ocultos garantem que
+                    # btn-hitl-aprovar e btn-hitl-rejeitar SEMPRE existam no
+                    # DOM (sao Input do callback principal). Sem eles, o
+                    # frontend manda os Inputs incompletos e o backend lanca
+                    # IndexError no _prepare_grouping.
+                    html.Div(id="hitl-container", children=[
+                        html.Button("", id="btn-hitl-aprovar",
+                                    style={"display": "none"}),
+                        html.Button("", id="btn-hitl-rejeitar",
+                                    style={"display": "none"}),
+                    ]),
+                ], status="ONLINE"),
+            ], style={"gridColumn": "span 6"}),
+
+            # Coluna direita — Painel técnico
+            html.Div([
+                hud_panel("CONFIDENCE", html.Div("—",
+                                                  id="confidence-display",
+                                                  style={"color": "var(--hud-muted)"}),
+                          status="REAL-TIME"),
+                hud_panel("TRAJETÓRIA LANGGRAPH", html.Div("—",
+                                                            id="trajectory-display",
+                                                            style={"color": "var(--hud-muted)"}),
+                          status="REAL-TIME"),
+                hud_panel("INTENT", html.Div("—",
+                                              id="intent-display",
+                                              style={"fontFamily": "'JetBrains Mono', monospace",
+                                                     "fontSize": "0.86rem",
+                                                     "color": "var(--hud-muted)"}),
+                          status="SUPERVISOR"),
+                hud_panel("RAG · DOCUMENTOS", html.Div("—",
+                                                        id="rag-display",
+                                                        style={"color": "var(--hud-muted)"}),
+                          status="CHROMADB"),
+                hud_panel("TOOLS CHAMADAS", html.Div("—",
+                                                      id="tools-display",
+                                                      style={"color": "var(--hud-muted)"}),
+                          status="FUNCTION"),
+                hud_panel("SAFETY", html.Div("—",
+                                              id="safety-display",
+                                              style={"color": "var(--hud-muted)"}),
+                          status="DUAL-LAYER"),
+            ], style={"gridColumn": "span 3"}),
+
+        ], className="grid grid-12col", style={"marginTop": "16px"}),
+
+        # Footer
+        html.Div([
+            html.Span(f"BluaDiagnostics Sprint 2 · Backend: {BACKEND_ATUAL.upper()} · "
+                      f"Modelo: {MODELO_ATUAL}"),
+            html.Span("⚕️ Este sistema não substitui avaliação médica · Em emergência: SAMU 192"),
+        ], className="hud-footer", style={"marginTop": "24px"}),
+
+    ], className="hud-page"),
+
+], className="app-shell")
+
+
+# =============================================================================
+# Callbacks
+# =============================================================================
+
+def _hitl_placeholders():
+    """Botoes HITL ocultos — usado quando nao ha rascunho pendente.
+
+    Importante: btn-hitl-aprovar e btn-hitl-rejeitar sao Input do callback
+    principal. Eles PRECISAM existir no DOM mesmo quando nao ha HITL ativo,
+    senao o frontend manda os Inputs incompletos e Dash falha com
+    IndexError no _prepare_grouping.
+    """
+    return [
+        html.Button("", id="btn-hitl-aprovar", style={"display": "none"}),
+        html.Button("", id="btn-hitl-rejeitar", style={"display": "none"}),
+    ]
+
+
+@callback(
+    Output("patient-card-container", "children"),
+    Input("beneficiario-select", "value"),
+)
+def atualizar_card_paciente(beneficiario_id):
+    return patient_card(beneficiario_id or "GABRIEL")
+
+
+@callback(
+    Output("session-data", "data"),
+    # chat-area e user-input.value tem allow_duplicate=True porque tambem
+    # sao escritos pelo clientside_callback de Optimistic UI (logo abaixo).
+    Output("chat-area", "children", allow_duplicate=True),
+    Output("confidence-display", "children"),
+    Output("trajectory-display", "children"),
+    Output("intent-display", "children"),
+    Output("rag-display", "children"),
+    Output("tools-display", "children"),
+    Output("safety-display", "children"),
+    Output("hitl-container", "children"),
+    Output("user-input", "value", allow_duplicate=True),
+    Output("audio-alert", "autoPlay"),
+    Input("btn-enviar", "n_clicks"),
+    Input("user-input", "n_submit"),
+    Input("btn-nova-sessao", "n_clicks"),
+    Input("btn-hitl-aprovar", "n_clicks"),
+    Input("btn-hitl-rejeitar", "n_clicks"),
+    State("user-input", "value"),
+    State("beneficiario-select", "value"),
+    State("session-data", "data"),
+    prevent_initial_call=True,
+)
+def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
+                       mensagem, beneficiario, sessao):
+    trig = ctx.triggered_id
+
+    # Reset de sessão — limpa só a UI, MANTÉM thread_id (contexto LangGraph
+    # preservado). Útil pra demo: apresentador limpa a tela visualmente sem
+    # perder o fio da conversa que o chatbot já tem internamente.
+    if trig == "btn-nova-sessao":
+        nova_sessao = {
+            "thread_id": sessao["thread_id"],  # preserva contexto do grafo
+            "mensagens": [],
+            "flags_safety_anteriores": [],
+            "ultimo_estado": None,
+        }
+        return (nova_sessao,
+                [html.Div("Nova sessão iniciada.", className="hud-info",
+                           style={"alignSelf": "center"})],
+                "—", "—", "—", "—", "—", "—",
+                _hitl_placeholders(), "", False)
+
+    # B6 — HITL: aprovação/rejeição do rascunho de prescrição
+    if trig in ("btn-hitl-aprovar", "btn-hitl-rejeitar"):
+        aprovado = trig == "btn-hitl-aprovar"
+        print(f"\n[dash_app] HITL: rascunho {'aprovado' if aprovado else 'rejeitado'}")
+        try:
+            estado = aprovar_rascunho_prescricao(
+                grafo=GRAFO,
+                thread_id=sessao["thread_id"],
+                aprovado=aprovado,
+            )
+        except Exception as exc:
+            print(f"[dash_app] Erro HITL: {exc}")
+            return (no_update, no_update, no_update, no_update, no_update,
+                    no_update, no_update,
+                    html.Div(f"Erro HITL: {exc}", className="hud-alert"),
+                    no_update, no_update, no_update)
+        # Substitui a "mensagem" do usuário pelo log de auditoria HITL
+        mensagem = f"[Médico {'aprovou' if aprovado else 'rejeitou'} o rascunho]"
+
+    elif not mensagem or not mensagem.strip():
+        return (no_update,) * 11
+
+    else:
+        # Executar turno normal no grafo
+        print(f"\n[dash_app] Turno: {mensagem!r}")
+        try:
+            estado = executar_turno(
+                grafo=GRAFO,
+                mensagem_usuario=mensagem,
+                thread_id=sessao["thread_id"],
+                beneficiario_id=beneficiario,
+                flags_safety_anteriores=sessao.get("flags_safety_anteriores", []),
+            )
+        except Exception as exc:
+            print(f"[dash_app] Erro: {exc}")
+            return (no_update, no_update, no_update, no_update, no_update,
+                    no_update, no_update,
+                    html.Div(f"Erro: {exc}", className="hud-alert"),
+                    no_update, no_update, no_update)
+
+    # Atualizar sessão
+    resposta_final = estado.get("resposta_final", "")
+    flags = estado.get("flags_safety", [])
+    eh_emergencia = ("RED_FLAG" in str(flags)
+                     or estado.get("agente_ativo") == "escalada_humana"
+                     or "192" in resposta_final)
+
+    sessao["mensagens"].append({"role": "user", "content": mensagem})
+    sessao["mensagens"].append({"role": "assistant", "content": resposta_final,
+                                  "emergencia": eh_emergencia})
+    sessao["flags_safety_anteriores"] = flags
+    sessao["ultimo_estado"] = {
+        "intent": estado.get("intent_classificada"),
+        "confianca_intent": estado.get("confianca_intent"),
+        "agente_ativo": estado.get("agente_ativo"),
+        "trajetoria_nos": estado.get("trajetoria_nos", []),
+        "tools_chamadas": [t["tool"] for t in estado.get("tools_chamadas", [])],
+        "documentos_rag": estado.get("documentos_rag", []),
+        "flags_safety": flags,
+        "confidence_score": estado.get("confidence_score", 0),
+        "confidence_nivel": estado.get("confidence_nivel", "—"),
+        "requer_aprovacao_humana": estado.get("requer_aprovacao_humana", False),
+    }
+
+    # Renderizar chat
+    chat_children = [
+        chat_bubble(m["role"], m["content"],
+                    emergencia=m.get("emergencia", False))
+        for m in sessao["mensagens"]
+    ]
+
+    # Painel técnico
+    ult = sessao["ultimo_estado"]
+
+    confidence_view = confidence_badge(ult["confidence_nivel"],
+                                        ult["confidence_score"] or 0)
+    trajectory_view = trajectory_display(ult["trajetoria_nos"])
+    intent_view = html.Div([
+        html.Div(f"intent: {ult['intent'] or '—'}",
+                 style={"color": "var(--hud-blue-dark)", "fontWeight": "600"}),
+        html.Div(f"confiança: {ult['confianca_intent']:.2f}"
+                 if ult["confianca_intent"] else "confiança: —",
+                 style={"color": "var(--hud-muted)"}),
+        html.Div(f"agente_final: {ult['agente_ativo'] or '—'}",
+                 style={"color": "var(--hud-cyan-deep)", "marginTop": "4px"}),
+    ])
+    rag_view = ([rag_chunk_card(d) for d in ult["documentos_rag"]]
+                if ult["documentos_rag"]
+                else html.Div("Sem chunks recuperados",
+                              style={"color": "var(--hud-muted)",
+                                     "fontStyle": "italic"}))
+    tools_view = (html.Div([html.Code(t, style={"display": "block",
+                                                  "padding": "4px 0",
+                                                  "fontSize": "0.82rem"})
+                            for t in ult["tools_chamadas"]])
+                  if ult["tools_chamadas"]
+                  else html.Div("Nenhuma tool chamada",
+                                style={"color": "var(--hud-muted)",
+                                       "fontStyle": "italic"}))
+
+    if flags:
+        safety_chips = [
+            html.Span(f, className=f"hud-chip hud-chip--{'bad' if 'RED' in f or 'REPROV' in f else 'warn'}",
+                      style={"display": "block", "margin": "4px 0"})
+            for f in flags
+        ]
+        safety_view = html.Div(safety_chips)
+    else:
+        safety_view = html.Span("APROVADO", className="hud-chip hud-chip--ok")
+
+    # HITL — botoes sempre presentes no DOM (Input do callback), apenas
+    # mudam de visiveis (com label) para ocultos conforme requer_aprovacao_humana.
+    if ult["requer_aprovacao_humana"]:
+        hitl_view = html.Div([
+            html.Span("🩺 Rascunho aguardando aprovação médica",
+                      className="blua-hitl__label"),
+            html.Button("APROVAR", className="hud-btn", id="btn-hitl-aprovar"),
+            html.Button("REJEITAR", className="hud-btn hud-btn--ghost",
+                        id="btn-hitl-rejeitar"),
+        ], className="blua-hitl")
+    else:
+        hitl_view = _hitl_placeholders()
+
+    return (sessao, chat_children, confidence_view, trajectory_view,
+            intent_view, rag_view, tools_view, safety_view, hitl_view,
+            "", eh_emergencia)
+
+
+# =============================================================================
+# Optimistic UI — pinta a mensagem do usuario INSTANTANEAMENTE no chat,
+# sem esperar o servidor Python responder. Executa direto no navegador
+# em JavaScript.
+#
+# Fluxo:
+#   1. User clica ENVIAR ou aperta Enter no input
+#   2. Este clientside callback pinta o balao "USER" no chat-area JA
+#   3. Em paralelo, o callback Python principal dispara, processa o
+#      turno (~5-10s), e quando volta substitui o chat-area inteiro com
+#      a versao completa (user msg + assistant msg)
+#
+# A substituicao no passo 3 funciona porque a versao do servidor inclui
+# o mesmo balao do user + o novo balao do assistant — visualmente nao
+# pisca, so adiciona a resposta.
+# =============================================================================
+clientside_callback(
+    """
+    function(n_enviar, n_submit, msg, currentChildren) {
+        if (!msg || !msg.trim()) {
+            return [window.dash_clientside.no_update, window.dash_clientside.no_update];
+        }
+        // Construir o balao de usuario no mesmo formato do chat_bubble Python
+        const bolhaUser = {
+            namespace: 'dash_html_components',
+            type: 'Div',
+            props: {
+                className: 'blua-bubble blua-bubble--user',
+                children: [
+                    {namespace: 'dash_html_components', type: 'Div',
+                     props: {className: 'blua-bubble__role', children: 'USER'}},
+                    {namespace: 'dash_html_components', type: 'Div',
+                     props: {style: {margin: 0, color: 'inherit'}, children: msg}}
+                ]
+            }
+        };
+        // Bolha placeholder "Pensando..." enquanto o servidor processa
+        const bolhaPensando = {
+            namespace: 'dash_html_components',
+            type: 'Div',
+            props: {
+                className: 'blua-bubble blua-bubble--assistant',
+                style: {opacity: 0.6, fontStyle: 'italic'},
+                children: [
+                    {namespace: 'dash_html_components', type: 'Div',
+                     props: {className: 'blua-bubble__role', children: 'BLUA'}},
+                    {namespace: 'dash_html_components', type: 'Div',
+                     props: {style: {margin: 0, color: 'inherit'},
+                             children: 'Analisando seu caso…'}}
+                ]
+            }
+        };
+        const novoChildren = Array.isArray(currentChildren)
+            ? currentChildren.concat([bolhaUser, bolhaPensando])
+            : [bolhaUser, bolhaPensando];
+        return [novoChildren, ''];  // limpa o input
+    }
+    """,
+    Output("chat-area", "children", allow_duplicate=True),
+    Output("user-input", "value", allow_duplicate=True),
+    Input("btn-enviar", "n_clicks"),
+    Input("user-input", "n_submit"),
+    State("user-input", "value"),
+    State("chat-area", "children"),
+    prevent_initial_call=True,
+)
+
+
+# =============================================================================
+# J.4 — Rehidratação de chat-area ao re-entrar em /chat
+# =============================================================================
+# Bug: o layout do /chat é estático (children de chat-area hardcoded com
+# "Olá! Sou o BluaDiagnostics..."). Cada navegação pra /chat re-renderiza
+# o layout inicial, sobrescrevendo o histórico de bolhas. Session-data
+# (Store global) preserva as mensagens mas a UI não as exibe.
+#
+# Fix: callback dispara em mudança de pathname; quando pathname == "/chat",
+# lê session-data.mensagens e re-renderiza bolhas via chat_bubble().
+#
+# Escopo: rehidrata apenas chat-area (mensagens). Painéis técnicos
+# (confidence/trajetória/RAG/tools/safety) voltam pra "—" ao re-entrar —
+# o histórico das mensagens é o que importa pro usuário; painéis populam
+# de novo no próximo turno do chatbot. Trade-off de simplicidade.
+
+
+@callback(
+    Output("chat-area", "children", allow_duplicate=True),
+    Input("chat-rehidratar-tick", "n_intervals"),
+    State("session-data", "data"),
+    prevent_initial_call=True,
+)
+def _rehidratar_chat_area(_n_intervals, sessao):
+    """Repopula chat-area.children a partir de session-data.mensagens
+    quando o layout do /chat termina de montar. Sem isso, mensagens
+    enviadas antes de sair da página somem visualmente ao voltar.
+
+    Trigger via dcc.Interval em vez de Input(hud-url.pathname) porque
+    o page_container do Dash multi-pages re-renderiza o layout DEPOIS
+    dos callbacks que escutam pathname, sobrescrevendo o output."""
+    if not sessao or not sessao.get("mensagens"):
+        # Primeira visita ou sessão zerada — mantém o "Olá" inicial
+        return no_update
+    # Re-renderiza histórico
+    return [
+        chat_bubble(m["role"], m["content"],
+                    emergencia=m.get("emergencia", False))
+        for m in sessao["mensagens"]
+    ]
+
+
+# =============================================================================
+# Run
+# =============================================================================
+# Nota: o callback `init_painel_tecnico` foi removido em 2026-05-26. Ele
+# declarava outputs com `allow_duplicate=True` conflitando com o callback
+# principal (sem flag), o que corrompia o registro de callbacks e gerava
+# KeyError no Dash. Os placeholders "—" sao agora setados diretamente no
+# layout dos panel divs (confidence/trajectory/intent/rag/tools/safety).
+#
+# Optimistic UI (2026-05-26): clientside_callback pinta o balao USER e a
+# bolha "Pensando..." instantaneamente. Callback Python substitui o
+# chat-area completo quando responde — usuario percebe latencia zero.
+
+# Bloco `if __name__ == "__main__": app.run(...)` removido pelo Passo 8.5.
+# O servidor agora é iniciado por app/unified_app.py, que monta todas as
+# páginas (chat, monitor, analise, gabriel) num único Flask na porta 8050.

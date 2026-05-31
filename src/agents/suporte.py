@@ -14,6 +14,7 @@ from src.tools import (
     consultar_historico_paciente,
     verificar_interacoes_medicamentosas,
     agendar_teleconsulta,
+    gerar_relatorio_telemetria,
 )
 from src.rag import recuperar_contexto_detalhado
 
@@ -30,6 +31,7 @@ _TOOLS_SUPORTE = [
         "consultar_historico_paciente",
         "verificar_interacoes_medicamentosas",
         "agendar_teleconsulta",
+        "gerar_relatorio_telemetria",
     }
 ]
 
@@ -44,6 +46,7 @@ def _executar_tool(nome: str, argumentos: dict) -> str:
         "consultar_historico_paciente": consultar_historico_paciente,
         "verificar_interacoes_medicamentosas": verificar_interacoes_medicamentosas,
         "agendar_teleconsulta": agendar_teleconsulta,
+        "gerar_relatorio_telemetria": gerar_relatorio_telemetria,
     }
     func = mapa.get(nome)
     if not func:
