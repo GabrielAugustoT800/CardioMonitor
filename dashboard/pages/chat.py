@@ -421,10 +421,12 @@ def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
                        mensagem, beneficiario, sessao):
     trig = ctx.triggered_id
 
-    # Reset de sessão
+    # Reset de sessão — limpa só a UI, MANTÉM thread_id (contexto LangGraph
+    # preservado). Útil pra demo: apresentador limpa a tela visualmente sem
+    # perder o fio da conversa que o chatbot já tem internamente.
     if trig == "btn-nova-sessao":
         nova_sessao = {
-            "thread_id": str(uuid.uuid4()),
+            "thread_id": sessao["thread_id"],  # preserva contexto do grafo
             "mensagens": [],
             "flags_safety_anteriores": [],
             "ultimo_estado": None,
