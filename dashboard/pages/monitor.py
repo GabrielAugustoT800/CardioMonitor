@@ -154,42 +154,6 @@ def _drive(_ntick, store):
 
     return store, False
 
-    # ── Tick — busca apenas registros novos ────────────────────
-    if not store.get("running"):
-        return store, True
-
-    try:
-        df = load_blob()
-        if df.empty:
-            return store, False
-
-        blob_count = store.get("blob_count", 0)
-        records    = store.get("records", [])
-
-        # Apenas linhas novas desde o início da sessão
-        novos = df.iloc[blob_count:]
-
-        for _, row in novos.iterrows():
-            records.append({
-                "idx":          blob_count,
-                "timestamp_s":  float(row["timestamp_s"]),
-                "ibi_ms":       float(row["ibi_ms"]),
-                "bpm":          float(row["bpm"]),
-                "media_ibi":    float(row["media_ibi"]),
-                "desvio_medio": float(row["desvio_medio"]),
-                "bat_anormais": int(row["bat_anormais"]),
-                "status":       str(row["status"]),
-            })
-            blob_count += 1
-
-        store["records"]    = records
-        store["blob_count"] = blob_count
-
-    except Exception as e:
-        print(f"[monitor] Erro ao ler Blob: {e}")
-
-    return store, False
-
 
 @callback(
     Output("mon-metrics",      "children"),
