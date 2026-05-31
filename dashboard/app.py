@@ -180,5 +180,25 @@ def _trocar_perfil_ativo(perfil_id):
     return {"id": perfil_id}, rota
 
 
+# J.1.b — label dinâmico do dropdown topbar baseado no JSON do MEU_PERFIL.
+# Quando o usuário cria/edita perfil em /meu-perfil, o label "Meu Perfil"
+# vira o primeiro nome cadastrado (ex: "Carlos"). Dispara em cada navegação
+# pra refletir mudanças sem precisar reiniciar app.
+@app.callback(
+    Output("topbar-perfil-dropdown", "options"),
+    Input("hud-url", "pathname"),
+)
+def _atualizar_label_dropdown(_pathname):
+    from shared.patient_registry import get_patient
+    mp = get_patient("MEU_PERFIL")
+    label_mp = (mp["nome"].split()[0]
+                if mp and mp.get("nome")
+                else "Meu Perfil")
+    return [
+        {"label": "Gabriel", "value": "GABRIEL"},
+        {"label": label_mp, "value": "MEU_PERFIL"},
+    ]
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=8050)

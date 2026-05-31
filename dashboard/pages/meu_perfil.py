@@ -17,8 +17,9 @@ import dash
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from dash import dcc, html, dash_table
+from dash import dcc, html, dash_table, callback, Input, Output, State, no_update
 
+from shared.patient_registry import get_patient, update_patient
 from utils.analysis import (
     status_color, status_label_pt, bpm_zone, bpm_zone_color,
 )
@@ -222,11 +223,105 @@ def _prescricao_card(p: dict) -> html.Div:
 # ── Layout ───────────────────────────────────────────────────────────────────
 
 def layout():
+    """Roteador entre formulário (se MEU_PERFIL não preenchido) e
+    prontuário (se preenchido). J.1.b da Fase J."""
+    perfil = get_patient("MEU_PERFIL")
+    if not perfil or not perfil.get("nome"):
+        return _layout_formulario()
+    return _layout_prontuario(perfil)
+
+
+def _layout_formulario():
+    """Formulário de criação inicial do MEU_PERFIL — 4 campos + disclaimer."""
+    return html.Div([
+        html.Section(className="hud-hero", children=[
+            html.Span("MOD // 04  CRIAR PERFIL", className="hud-hero__tag"),
+            html.H1("Criar Meu Perfil"),
+            html.P("Preencha os dados básicos para criar seu perfil cardiovascular."),
+        ]),
+
+        html.Div([
+            html.Strong("Demonstração acadêmica: "),
+            "Em sistema clínico real, este formulário coletaria histórico completo "
+            "(condições crônicas, medicações em uso, alergias, exames recentes, "
+            "consultas prévias). Para fins de demo, apenas 4 campos essenciais. "
+            "Demais dados serão preenchidos com template de paciente saudável."
+        ], className="hud-info", style={
+            "padding": "16px", "marginBottom": "24px",
+            "borderLeft": f"3px solid {ACCENT_CYAN}",
+        }),
+
+        html.Div(style={"maxWidth": "560px"}, children=[
+            html.Label("Nome completo", style={
+                "display": "block", "marginTop": "12px", "marginBottom": "4px",
+                "fontSize": "0.72rem", "fontWeight": "700",
+                "textTransform": "uppercase", "letterSpacing": "0.08em",
+                "color": "var(--hud-blue-dark)",
+            }),
+            dcc.Input(id="form-nome", type="text",
+                      placeholder="Ex: Carlos Almeida",
+                      style={"width": "100%"}),
+
+            html.Label("Data de nascimento (AAAA-MM-DD)", style={
+                "display": "block", "marginTop": "12px", "marginBottom": "4px",
+                "fontSize": "0.72rem", "fontWeight": "700",
+                "textTransform": "uppercase", "letterSpacing": "0.08em",
+                "color": "var(--hud-blue-dark)",
+            }),
+            dcc.Input(id="form-nascimento", type="text",
+                      placeholder="Ex: 1993-07-22",
+                      style={"width": "100%"}),
+
+            html.Label("Idade", style={
+                "display": "block", "marginTop": "12px", "marginBottom": "4px",
+                "fontSize": "0.72rem", "fontWeight": "700",
+                "textTransform": "uppercase", "letterSpacing": "0.08em",
+                "color": "var(--hud-blue-dark)",
+            }),
+            dcc.Input(id="form-idade", type="number", min=0, max=120,
+                      placeholder="Ex: 32",
+                      style={"width": "100%"}),
+
+            html.Label("Sexo", style={
+                "display": "block", "marginTop": "12px", "marginBottom": "4px",
+                "fontSize": "0.72rem", "fontWeight": "700",
+                "textTransform": "uppercase", "letterSpacing": "0.08em",
+                "color": "var(--hud-blue-dark)",
+            }),
+            dcc.Dropdown(id="form-sexo", options=[
+                {"label": "Masculino", "value": "masculino"},
+                {"label": "Feminino", "value": "feminino"},
+                {"label": "Outro", "value": "outro"},
+            ], placeholder="Selecione",
+               style={"marginBottom": "24px"}),
+
+            html.Button("CRIAR PERFIL", id="btn-criar-perfil",
+                        className="hud-btn",
+                        style={"width": "100%", "marginTop": "12px"}),
+
+            html.Div(id="form-feedback", style={"marginTop": "12px"}),
+        ]),
+    ], className="hud-page")
+
+
+def _layout_prontuario(perfil: dict):
+    """Prontuário hardcoded (template saudável Carlos Almeida) com nome,
+    idade, sexo e nascimento sobrescritos pelos dados do JSON do MEU_PERFIL."""
+    # Merge: hardcoded saudável + identidade do usuário
+    paciente = {
+        **PACIENTE_INFO,
+        "nome": perfil["nome"],
+        "idade": perfil.get("idade", paciente["idade"]),
+        "sexo": (perfil["sexo"].capitalize() if perfil.get("sexo")
+                 else paciente["sexo"]),
+        "nascimento": perfil.get("nascimento", paciente["nascimento"]),
+    }
+
     if not MEU_PERFIL_CSV.exists():
         return html.Div([
             html.Section(className="hud-hero", children=[
                 html.Span("MOD // 04  PRONTUÁRIO", className="hud-hero__tag"),
-                html.H1("Prontuário — Meu Perfil"),
+                html.H1(f"Prontuário — {paciente['nome']}"),
                 html.P("Registro médico eletrônico — Care Plus / CardioMonitor"),
             ]),
             html.Div(className="hud-alert", children=[
@@ -246,19 +341,27 @@ def layout():
                "atencao" if irr > 0 else "regular")
     bpm_mean = df["bpm"].mean()
 
-    # ── Cabeçalho hero ──────────────────────────────────────────────────────
-    hero = html.Section(className="hud-hero", children=[
+    # ── Cabeçalho hero (com botão Editar) ───────────────────────────────────
+    hero = html.Section(className="hud-hero", style={"position": "relative"},
+                        children=[
         html.Span("MOD // 04  PRONTUÁRIO MÉDICO", className="hud-hero__tag"),
         html.H1([
-            f"Prontuário — {PACIENTE_INFO['nome']} ",
+            f"Prontuário — {paciente['nome']} ",
             html.Span("❤", className="hud-heart"),
         ]),
         html.P("Registro Médico Eletrônico — Care Plus / CardioMonitor  //  "
                "Perfil Cardiometabólico Saudável"),
+        # J.1.b — botão Editar volta pro formulário (zera nome no JSON)
+        html.Button("EDITAR PERFIL", id="btn-editar-perfil",
+                    className="hud-btn hud-btn--ghost",
+                    style={
+                        "position": "absolute",
+                        "top": "16px", "right": "16px",
+                    }),
     ])
 
     # ── Card do paciente + médico ────────────────────────────────────────────
-    initials_paciente = "".join(p[0] for p in PACIENTE_INFO["nome"].split()[:2]).upper()
+    initials_paciente = "".join(p[0] for p in paciente["nome"].split()[:2]).upper()
     patient_doctor_row = html.Div(style={
         "display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "16px",
         "marginBottom": "20px",
@@ -280,19 +383,19 @@ def layout():
                         "flexShrink": "0",
                     }),
                     html.Div([
-                        html.Div(PACIENTE_INFO["nome"], style={
+                        html.Div(paciente["nome"], style={
                             "fontSize": "1rem", "fontWeight": "700",
                             "color": "var(--hud-blue-dark)",
                             "fontFamily": "JetBrains Mono, Consolas, monospace",
                         }),
                         html.Div(
-                            f"{PACIENTE_INFO['nascimento']}  //  "
-                            f"{PACIENTE_INFO['idade']} anos  //  "
-                            f"{PACIENTE_INFO['sexo']}",
+                            f"{paciente['nascimento']}  //  "
+                            f"{paciente['idade']} anos  //  "
+                            f"{paciente['sexo']}",
                             style={"fontSize": "0.75rem", "color": "#6B7D8F",
                                    "fontFamily": "JetBrains Mono, Consolas, monospace"},
                         ),
-                        html.Div(PACIENTE_INFO["convenio"], style={
+                        html.Div(paciente["convenio"], style={
                             "fontSize": "0.72rem", "color": "#6B7D8F",
                         }),
                     ]),
@@ -308,19 +411,19 @@ def layout():
                     }),
                     html.Span(value, style={"fontSize": "0.8rem", "color": "#2C3E50"}),
                 ]) for label, value in [
-                    ("Avaliação principal", PACIENTE_INFO["diagnostico_principal"]),
-                    ("Comorbidades", " | ".join(PACIENTE_INFO["diagnosticos_secundarios"])),
+                    ("Avaliação principal", paciente["diagnostico_principal"]),
+                    ("Comorbidades", " | ".join(paciente["diagnosticos_secundarios"])),
                     ("Escore CHA₂DS₂-VA",
-                     f"{PACIENTE_INFO['cha2ds2_va']} — sem indicação de anticoagulação"),
-                    ("Alergias", PACIENTE_INFO["alergias"]),
-                    ("Carteirinha", PACIENTE_INFO["carteirinha"]),
+                     f"{paciente['cha2ds2_va']} — sem indicação de anticoagulação"),
+                    ("Alergias", paciente["alergias"]),
+                    ("Carteirinha", paciente["carteirinha"]),
                 ]],
                 html.Div(style={
                     "marginTop": "10px", "padding": "8px 12px",
                     "backgroundColor": "rgba(7,62,130,0.05)",
                     "borderRadius": "4px", "borderLeft": f"3px solid {SUCCESS}",
                     "fontSize": "0.78rem", "color": "#2C3E50", "lineHeight": "1.5",
-                }, children=PACIENTE_INFO["observacoes"]),
+                }, children=paciente["observacoes"]),
             ])
         ),
 
@@ -609,3 +712,73 @@ def layout():
             ],
         ),
     ])
+
+
+# ── Callbacks ────────────────────────────────────────────────────────────────
+# J.1.b — formulário de criação + edição do MEU_PERFIL.
+
+@callback(
+    Output("form-feedback", "children"),
+    Output("hud-url", "pathname", allow_duplicate=True),
+    Input("btn-criar-perfil", "n_clicks"),
+    State("form-nome", "value"),
+    State("form-nascimento", "value"),
+    State("form-idade", "value"),
+    State("form-sexo", "value"),
+    prevent_initial_call=True,
+)
+def _criar_perfil(n_clicks, nome, nascimento, idade, sexo):
+    """Submete o formulário: valida + persiste no JSON via update_patient.
+    Reload da mesma URL pra renderizar o prontuário cheio."""
+    if not n_clicks:
+        return no_update, no_update
+
+    # Validação
+    def _warn(msg):
+        return html.Div(msg, style={
+            "padding": "10px 14px",
+            "backgroundColor": f"{WARNING}11",
+            "border": f"1px solid {WARNING}",
+            "color": "#9A7300", "borderRadius": "4px",
+            "fontSize": "0.85rem",
+        }), no_update
+
+    if not nome or not nome.strip():
+        return _warn("Nome é obrigatório.")
+    if not nascimento or not nascimento.strip():
+        return _warn("Data de nascimento é obrigatória.")
+    if idade is None:
+        return _warn("Idade é obrigatória.")
+    if not sexo:
+        return _warn("Sexo é obrigatório.")
+
+    try:
+        update_patient(
+            "MEU_PERFIL",
+            nome=nome.strip(),
+            nascimento=nascimento.strip(),
+            idade=int(idade),
+            sexo=sexo,
+        )
+    except (ValueError, OSError) as exc:
+        return _warn(f"Erro ao salvar: {exc}"), no_update
+
+    # Reload mesma URL → layout() detecta nome preenchido → prontuário
+    return no_update, "/meu-perfil"
+
+
+@callback(
+    Output("hud-url", "pathname", allow_duplicate=True),
+    Input("btn-editar-perfil", "n_clicks"),
+    prevent_initial_call=True,
+)
+def _editar_perfil(n_clicks):
+    """Botão 'EDITAR PERFIL': zera nome no JSON → layout() volta pro form."""
+    if not n_clicks:
+        return no_update
+    try:
+        update_patient("MEU_PERFIL", nome=None, idade=None,
+                       sexo=None, nascimento=None)
+    except (ValueError, OSError):
+        return no_update
+    return "/meu-perfil"
