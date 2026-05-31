@@ -44,6 +44,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 DEFAULT_CSV = DATA_DIR / "cardiac_data.csv"
 GABRIEL_CSV = DATA_DIR / "gabriel_data.csv"
+# J.2 INTEGRATION: dataset saudável demonstrativo do MEU_PERFIL.
+# Contraste com gabriel_data.csv (FA paroxística) — usado em meu_perfil.py.
+MEU_PERFIL_CSV = DATA_DIR / "meu_perfil_data.csv"
 
 # --- Azure Blob ---
 AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")

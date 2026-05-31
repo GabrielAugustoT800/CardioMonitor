@@ -79,3 +79,14 @@ GABRIEL_CSV: Path = Path(
         str(DASHBOARD_DATA_DIR / "gabriel_data.csv"),
     )
 )
+
+# Dataset saudável demonstrativo do MEU_PERFIL (200 batimentos, BPM 65-76,
+# zero anômalos, 100% regular). Cria contraste de demo com gabriel_data.csv
+# (FA paroxística). J.2 — Fase J.
+# Override via BLUA_MEU_PERFIL_CSV — análogo a BLUA_GABRIEL_CSV.
+MEU_PERFIL_CSV: Path = Path(
+    os.environ.get(
+        "BLUA_MEU_PERFIL_CSV",
+        str(DASHBOARD_DATA_DIR / "meu_perfil_data.csv"),
+    )
+)

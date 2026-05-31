@@ -39,7 +39,7 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from .paths import TELEMETRY_CSV, GABRIEL_CSV
+from .paths import TELEMETRY_CSV, GABRIEL_CSV, MEU_PERFIL_CSV
 
 # Map opcional de paciente_id (chatbot) → strings aceitas na coluna `patient`
 # do dashboard. Estendido em runtime via `register_alias`.
@@ -47,6 +47,19 @@ _ALIAS: dict[str, list[str]] = {
     # GABRIEL é o paciente canônico — alinhado com o dataset de referência
     # do dashboard ("gabriel_data.csv" com 200 batimentos).
     "GABRIEL": ["GABRIEL", "Gabriel", "live", "live-sim"],
+    # MEU_PERFIL (J.2 Fase J) — dataset saudável demonstrativo
+    # ("meu_perfil_data.csv" com 200 batimentos, BPM 65-76, 100% regular).
+    "MEU_PERFIL": ["MEU_PERFIL", "Meu Perfil", "meu_perfil"],
+}
+
+# Mapa de fallback CSV por paciente_id quando o paciente não está presente
+# em TELEMETRY_CSV (live cardiac_data.csv). Permite que load_recent_beats
+# retorne dado de referência ao invés de DataFrame vazio.
+# J.2 Fase J: adicionado MEU_PERFIL apontando pra meu_perfil_data.csv,
+# análogo ao GABRIEL que já existia pra gabriel_data.csv.
+_FALLBACK_CSV_BY_ID: dict[str, "Path"] = {
+    "GABRIEL": GABRIEL_CSV,
+    "MEU_PERFIL": MEU_PERFIL_CSV,
 }
 
 
@@ -83,9 +96,13 @@ def load_recent_beats(
     """
     Retorna os últimos `n` batimentos do paciente.
 
-    Se não houver linhas para o paciente, e ele for GABRIEL (canônico),
-    cai para o gabriel_data.csv como referência. Para outros pacientes,
-    devolve DataFrame vazio — caller decide o que fazer.
+    Se não houver linhas para o paciente em `csv_path` (live data), cai
+    para um CSV de referência conforme `_FALLBACK_CSV_BY_ID` (GABRIEL →
+    gabriel_data.csv, MEU_PERFIL → meu_perfil_data.csv). Outros pacientes
+    sem fallback registrado retornam DataFrame vazio.
+
+    Nome legado `fallback_to_gabriel` é mantido por compatibilidade —
+    semanticamente agora controla TODOS os fallbacks (não só Gabriel).
     """
     df = _read_csv_safe(csv_path)
     if not df.empty:
@@ -94,11 +111,13 @@ def load_recent_beats(
         if not sub.empty:
             return sub.tail(n).reset_index(drop=True)
 
-    # Fallback: dataset de referência para GABRIEL
-    if fallback_to_gabriel and paciente_id == "GABRIEL":
-        gab = _read_csv_safe(GABRIEL_CSV)
-        if not gab.empty:
-            return gab.tail(n).reset_index(drop=True)
+    # Fallback: dataset de referência por paciente_id
+    if fallback_to_gabriel:
+        fallback_path = _FALLBACK_CSV_BY_ID.get(paciente_id)
+        if fallback_path is not None:
+            fb = _read_csv_safe(fallback_path)
+            if not fb.empty:
+                return fb.tail(n).reset_index(drop=True)
 
     return pd.DataFrame()
 
