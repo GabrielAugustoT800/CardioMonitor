@@ -150,7 +150,16 @@ Branch `integracao-arrhythmiamonitor` no repo local `blua-cardio`. Push pro GitH
 
 ### Out.4 — Setup Azure Blob real
 
-Se J.3 (bypass com CSV local) for suficiente pra demo, Azure real pode ser indefinidamente adiado. Caso queira testar integração completa cloud, ver tutorial em https://learn.microsoft.com/pt-br/azure/storage/blobs/storage-quickstart-blobs-portal ou usar Azurite (emulador local).
+~~Se J.3 (bypass com CSV local) for suficiente pra demo, Azure real pode ser indefinidamente adiado.~~
+
+**Status: ✓ implementado.** Azure Blob configurado com sucesso (account `heartmonitordataset`, container `dataset`). Smoke end-to-end confirmou:
+- `load_blob()` retorna ~2658 linhas reais do Blob (vs 1443 do fallback local J.3)
+- `agendar_teleconsulta` dual-write funcional (Blob primário + local backup) — blob `consultas_<paciente_id>.json` criado com sucesso durante smoke
+- `gerar_relatorio_telemetria` opera sobre dataset real do Blob
+
+`azure-storage-blob 12.29.0` adicionada ao `requirements.txt` (commit `5f18aa9`). Connection string em `.env` (gitignored, nunca commitada).
+
+Demo local sem Azure continua funcional via fallback CSV automático (J.3). Toggle automático: setar `AZURE_STORAGE_CONNECTION_STRING` → modo cloud; remover → modo local.
 
 ---
 
