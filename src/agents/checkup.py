@@ -20,6 +20,7 @@ from src.tools import (
     agendar_teleconsulta,
     criar_perfil_paciente,
     consultar_telemetria_dashboard,
+    gerar_relatorio_telemetria,
 )
 from src.rag import recuperar_contexto_detalhado
 
@@ -39,6 +40,7 @@ _TOOLS_CHECKUP = [
         "agendar_teleconsulta",
         "criar_perfil_paciente",
         "consultar_telemetria_dashboard",
+        "gerar_relatorio_telemetria",
     }
 ]
 
@@ -56,6 +58,7 @@ def _executar_tool(nome: str, argumentos: dict) -> str:
         "agendar_teleconsulta": agendar_teleconsulta,
         "criar_perfil_paciente": criar_perfil_paciente,
         "consultar_telemetria_dashboard": consultar_telemetria_dashboard,
+        "gerar_relatorio_telemetria": gerar_relatorio_telemetria,
     }
     func = mapa.get(nome)
     if not func:

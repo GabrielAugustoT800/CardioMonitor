@@ -636,22 +636,32 @@
         },
         "sexo": {
           "type": "string",
-          "enum": ["masculino", "feminino", "outro"],
+          "enum": [
+            "masculino",
+            "feminino",
+            "outro"
+          ],
           "description": "Sexo biológico. Use exatamente um dos três valores aceitos."
         },
         "condicoes": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "Lista de condições cardiovasculares conhecidas. Aceita siglas comuns que são normalizadas: HAS (hipertensão), FA (fibrilação atrial), IC (insuficiência cardíaca), DAC, DM, TEP, AVE. Ou nomes completos. Exemplo: ['HAS', 'arritmia sinusal']."
         },
         "medicacoes": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "Lista de medicações em uso, formato livre. Exemplo: ['Losartana 50mg', 'AAS 100mg']."
         },
         "alergias": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "Lista de alergias medicamentosas conhecidas. Exemplo: ['Dipirona', 'Penicilina']."
         },
         "confirmacao": {
@@ -660,7 +670,11 @@
           "description": "FLAG CRÍTICA DE SEGURANÇA. SEMPRE chame primeiro com `false` (ou omita) para obter o preview. Só passe `true` APÓS confirmação verbal explícita do usuário (\"sim\", \"pode criar\", \"confirmo\") no chat. NUNCA passe `true` na primeira chamada — sempre faça o preview primeiro."
         }
       },
-      "required": ["nome", "idade", "sexo"]
+      "required": [
+        "nome",
+        "idade",
+        "sexo"
+      ]
     }
   },
   {
@@ -688,7 +702,26 @@
           "description": "Quantos batimentos individuais retornar na lista. Default 10, máximo 50 (clampeado internamente)."
         }
       },
-      "required": ["paciente_id"]
+      "required": [
+        "paciente_id"
+      ]
+    }
+  },
+  {
+    "name": "gerar_relatorio_telemetria",
+    "description": "Gera relatório resumido dos últimos N registros de telemetria do CardioMonitor (visão GLOBAL do dataset, NÃO filtra por paciente). Use quando o usuário pedir 'visão geral do sistema', 'status do CardioMonitor', 'últimos registros gerais', 'como está a base de dados', 'resumo da telemetria' ou similar. Retorna BPM médio, mín/máx, percentual de irregulares, total de batimentos anômalos + texto pronto pra incorporar na resposta. Para análise de paciente específico, use consultar_telemetria_dashboard em vez disso.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "n_registros": {
+          "type": "integer",
+          "description": "Quantos batimentos analisar (default 50, max 500).",
+          "default": 50,
+          "minimum": 1,
+          "maximum": 500
+        }
+      },
+      "required": []
     }
   }
 ]
