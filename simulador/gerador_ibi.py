@@ -28,8 +28,8 @@ FATOR_VELOCIDADE = 10       # divide o delay real — 1 = tempo real, 10 = 10x m
 # --- Caminho do executável C++ ---
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SIMULADOR_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "simulador_esp32"))
-NOME_EXE = "simulador_esp32.exe" if sys.platform == "win32" else "simulador_esp32"
+SIMULADOR_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "simulador"))
+NOME_EXE = "simulador_esp32.exe" if sys.platform == "win32" else "simulador"
 EXECUTAVEL = os.path.join(SIMULADOR_DIR, NOME_EXE)
 
 # --- Geradores por tipo de arritmia ---

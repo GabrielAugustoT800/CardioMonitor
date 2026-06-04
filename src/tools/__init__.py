@@ -14,6 +14,7 @@ from .ritmo import analisar_ritmo_cardiaco
 from .wearable import consultar_sinais_vitais_wearable
 from .estratificador_cardiovascular import estratificar_dor_toracica
 from .prescricao import sugerir_rascunho_prescricao
+from .agendamento import agendar_teleconsulta, consultar_agenda_medico
 
 # --- Novas tools do merge ---
 from .criar_perfil import criar_perfil_paciente
@@ -34,4 +35,5 @@ __all__ = [
     "criar_perfil_paciente",
     "consultar_telemetria_dashboard",
     "gerar_relatorio_telemetria",
+    "consultar_agenda_medico"
 ]

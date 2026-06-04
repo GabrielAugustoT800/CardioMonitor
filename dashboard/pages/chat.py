@@ -281,9 +281,7 @@ layout = html.Div([
     # re-renderiza o layout DEPOIS dos callbacks que escutam pathname,
     # sobrescrevendo o output. Interval só dispara quando o componente
     # JÁ está montado, garantindo que o output sobrevive.
-    dcc.Interval(id="chat-rehidratar-tick", interval=300,
-                 max_intervals=1, n_intervals=0),
-
+    
     # Session storage — Passo 8.5: movido para o layout global do
     # app/unified_app.py com storage_type="session" (preserva conversa
     # entre páginas, reseta ao fechar a aba). Callbacks abaixo continuam

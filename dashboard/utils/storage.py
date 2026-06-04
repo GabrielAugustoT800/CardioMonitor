@@ -8,7 +8,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterable, Optional
 from utils.analysis import classify_status
-
 import pandas as pd
 from dotenv import load_dotenv
 

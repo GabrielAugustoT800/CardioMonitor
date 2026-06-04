@@ -206,15 +206,37 @@
     }
   },
   {
+    "name": "consultar_agenda_medico",
+    "description": "Lista os horários disponíveis do Dr. Gregory House para agendamento. DEVE ser chamada ANTES de agendar_teleconsulta. Apresente os slots ao usuário e aguarde ele escolher um antes de confirmar o agendamento.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "urgencia": {
+          "type": "string",
+          "enum": [
+            "rotina",
+            "prioritario",
+            "urgente"
+          ],
+          "description": "Nível de urgência clínica. 'rotina': sem sintomas agudos. 'prioritario': sintomas presentes sem risco imediato. 'urgente': red flag cardiovascular."
+        }
+      },
+      "required": []
+    }
+  },
+  {
     "name": "agendar_teleconsulta",
     "description": "Agenda uma teleconsulta com cardiologista na plataforma Blua. O nível de urgência deve refletir a avaliação clínica do agente — nunca perguntar ao usuário qual urgência ele quer. Deve ser chamada após triagem de sintomas ou detecção de alteração no ritmo cardíaco.",
     "parameters": {
       "type": "object",
       "properties": {
-        "especialidade": {
+        "motivo": {
           "type": "string",
-          "description": "Especialidade médica para o agendamento. Default: 'cardiologia'.",
-          "default": "cardiologia"
+          "description": "Resumo clínico do motivo do agendamento."
+        },
+        "slot_id": {
+          "type": "string",
+          "description": "ID do slot escolhido pelo usuário via consultar_agenda_medico. Ex: AGD-ROT-001."
         },
         "urgencia": {
           "type": "string",
@@ -223,20 +245,21 @@
             "prioritario",
             "urgente"
           ],
-          "description": "Nível de urgência clínica. 'rotina': sem sintomas agudos, retorno preventivo. 'prioritario': sintomas presentes mas sem risco imediato. 'urgente': red flag cardiovascular detectada, necessita atendimento em horas."
+          "description": "Nível de urgência clínica."
         },
-        "motivo": {
+        "especialidade": {
           "type": "string",
-          "description": "Resumo clínico do motivo do agendamento gerado pelo agente. Será enviado ao médico como briefing pré-consulta. Ex: 'Paciente relata palpitações recorrentes. Ritmo analisado como irregular em 4 de 5 registros. Histórico de arritmia sinusal.'"
+          "default": "cardiologia"
         },
         "paciente_id": {
           "type": "string",
-          "description": "ID do paciente vinculado à sessão (BENEF-XXX). Quando fornecido, o agendamento é persistido vinculado ao paciente. Quando ausente, é persistido como agendamento sem paciente vinculado. Campo opcional — agents que ainda não foram atualizados pra passar este campo continuam funcionando normalmente."
+          "description": "ID do paciente vinculado à sessão."
         }
       },
       "required": [
-        "urgencia",
-        "motivo"
+        "motivo",
+        "slot_id",
+        "urgencia"
       ]
     },
     "mock_responses": {
@@ -249,7 +272,7 @@
         "plataforma": "Teleconsulta Blua",
         "link_acesso": "https://blua.careplus.com.br/consulta/ROT-2026-4891",
         "codigo_confirmacao": "BLU-ROT-4891",
-        "instrucoes": "Acesse o link 5 minutos antes do horário. Tenha seu documento de identidade em mãos."
+        "instrucoes": "Acesse o link 5 minutes antes do horário. Tenha seu documento de identidade em mãos."
       },
       "prioritario": {
         "agendado": true,

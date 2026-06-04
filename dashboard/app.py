@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path  # FIX 8.5: pages_folder absoluto
 
 import dash
-from dash import Dash, Input, Output, State, dcc, html
+from dash import Dash, Input, Output, State, dcc, html, no_update
 
 from utils.storage import ensure_csv, DEFAULT_CSV
 
@@ -109,12 +109,12 @@ app.layout = html.Div(className="app-shell", children=[
     # CHAT INTEGRATION: estado de sessão do chatbot preservado entre páginas.
     # storage_type default ("memory") — vai zerar ao recarregar a aba.
     # Para sobreviver a refresh, mudar para storage_type="session".
-    dcc.Store(id="session-data", data={
-        "thread_id": str(uuid.uuid4()),
-        "mensagens": [],
-        "flags_safety_anteriores": [],
-        "ultimo_estado": None,
-    }),
+    dcc.Store(id="session-data", storage_type="session", data={
+    "thread_id": str(uuid.uuid4()),
+    "mensagens": [],
+    "flags_safety_anteriores": [],
+    "ultimo_estado": None,
+}),
     # C13: perfil ativo (atalho de navegação contextual entre Gabriel e Meu Perfil)
     # storage_type="session" (não "local") — zera ao fechar aba pra evitar
     # dessincronização entre dropdown (value="GABRIEL" hardcoded) e Store
@@ -215,6 +215,14 @@ def _sync_dropdown_to_url(pathname, current_value):
         return "GABRIEL"
     return dash.no_update
 
-
+@app.callback(
+    Output("chat-rehidratar-tick", "n_intervals"),
+    Input("hud-url", "pathname"),
+    prevent_initial_call=True,
+)
+def _resetar_tick_rehidratacao(pathname):
+    if pathname == "/chat":
+        return 0
+    return no_update
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=8050)
