@@ -1,0 +1,176 @@
+# Pendências pós-integração ArrhythmiaMonitor
+
+Documento criado ao fechar Fase I da integração. Lista o que ficou conhecido mas não-resolvido na integração, com classificação de quando atacar.
+
+**Filosofia de prioridades:** Fase J = "demo polish" (UX + funcionalidade pra demo). Fora de escopo = decisões futuras de Filipe.
+
+---
+
+## Status: Fase J CONCLUÍDA (maio/2026)
+
+**8 de 8 itens implementados** em 10 commits.
+
+| Item | Status | Commit |
+|------|--------|--------|
+| J.5 dropdown topbar visível | ✓ | 2b733d0 |
+| J.7 dropdown /chat unificado (inclui ex-K.1) | ✓ | 6fd65ac |
+| J.6 feedback visual perfil ativo | ✓ (resolvido por J.5) | 97960a3 |
+| J.3 fallback Blob → CSV local | ✓ | 336038d |
+| J.2 CSV saudável MEU_PERFIL | ✓ | bb888e3 |
+| J.1 layout hardcoded saudável | ✓ | 0254b2c |
+| J.1.b formulário criação + update_patient | ✓ | 31549f7 |
+| J.1.b fix-up | ✓ | 33ccc1b |
+| J.1.4 revertido (label dinâmico dropdown) | ✓ fix-up | 487dc50 |
+| J.4 fix conversa /chat reseta | ✓ | 6105970 |
+
+### Pendência menor: label dinâmico do dropdown topbar
+
+Tentativa de J.1.4 (label do dropdown topbar mostrar primeiro nome do MEU_PERFIL cadastrado) foi REVERTIDA durante smoke final consecutivo ao J.1.b. Causa: o callback `Output("topbar-perfil-dropdown", "options")` triggered por `Input("hud-url", "pathname")` disparava re-render do react-select v5 do Dash 4 a cada navegação, que resetava o `value` pro primeiro option (GABRIEL). Reset disparava o `_trocar_perfil_ativo` que navegava pra `/gabriel` — clicar MONITOR ou ANALISE voltava pra `/gabriel`.
+
+Estado atual: label dropdown topbar é estático ("Meu Perfil") mesmo após cadastro de perfil. Sacrifício estético em troca de navegação correta.
+
+**Implementação correta (futura, sessão dedicada):** usar `dash.callback_context` pra distinguir mudança vinda de click manual no dropdown vs reset automático pós re-render. Ou refatorar pra não disparar update de options em cada navegação (só quando MEU_PERFIL.nome muda no JSON, via Store dedicado).
+
+**Risco:** baixo (escopo isolado em `dashboard/app.py`, ~15 linhas). **Trabalho:** 1-2h.
+
+---
+
+## Fase J — Demo polish (próxima sessão dedicada)
+
+### J.1 — Criação de perfil via UI na página `/meu-perfil`
+
+**Conceito revisado** durante validação I3. MEU_PERFIL não nasce mais como placeholder vazio pra preencher via chatbot. Em vez disso:
+
+- Página `/meu-perfil` ganha **formulário de criação de perfil** com campos: nome, idade, sexo, problema de saúde.
+- Submit do formulário persiste no `data/mocks/perfis_clinicos.json` (substituindo a entrada MEU_PERFIL placeholder atual).
+- **Após criar perfil**, `meu_perfil_data.csv` (já em `dashboard/data/`, gitignorado até integração) começa a alimentar telemetria do MEU_PERFIL.
+- Contraste de demo: Gabriel doente (FA paroxística, dataset com 22% irregularidade) × MEU_PERFIL saudável (BPM 65-76, zero anômalos, 100% regular).
+
+**Trabalho necessário:**
+- Refatorar `dashboard/pages/meu_perfil.py` adicionando formulário (Dash `dcc.Input` + `html.Button`).
+- Callback que escreve no JSON via `shared.patient_registry` (função nova ou adaptação de existente).
+- Validação: idade 0-120, sexo enum, nome obrigatório.
+
+### J.2 — Integrar `meu_perfil_data.csv` saudável
+
+CSV de 200 batimentos saudáveis está em `dashboard/data/meu_perfil_data.csv` (gitignorado até integração). Quando J.1 estiver funcionando, integrar formalmente:
+
+**Trabalho necessário:**
+1. Remover entrada de `.gitignore` que ignora `dashboard/data/meu_perfil_data.csv`.
+2. `shared/paths.py`: adicionar `MEU_PERFIL_CSV = DASHBOARD_DATA_DIR / "meu_perfil_data.csv"`.
+3. `shared/telemetry_store.py`: adicionar entrada em `_ALIAS` (`"MEU_PERFIL": ["MEU_PERFIL"]`) + roteamento de CSV por paciente_id.
+4. `data/mocks/perfis_clinicos.json`: ao criar perfil em J.1, `_meta.csv_telemetria` aponta pra `dashboard/data/meu_perfil_data.csv`.
+5. Discussão pendente: telemetria do MEU_PERFIL aparece em `/chat` (chatbot lê via tool) ou em `/monitor` (gráfico). Decisão fica pro momento de implementação.
+
+### J.3 — Bypass do Azure Blob com CSV local (Caminho 3)
+
+**Problema:** `/monitor` e `/analise` upstream chamam `load_blob()` sem fallback. Sem Azure Blob configurado, retornam DataFrame vazio. Inutiliza páginas em demo local.
+
+**Solução proposta:** modificar `dashboard/utils/storage.py` pra que `load_blob()` (ou wrapper novo) tenha fallback automático pra CSV local quando Blob indisponível:
+
+```python
+def load_telemetria(perfil_ativo=None):
+    if blob_available():
+        return load_blob()
+    # Fallback local
+    if perfil_ativo == "GABRIEL":
+        return load_csv(GABRIEL_CSV)
+    elif perfil_ativo == "MEU_PERFIL":
+        return load_csv(MEU_PERFIL_CSV)
+    return load_csv(DEFAULT_CSV)
+```
+
+**Trade-off:** edita arquivo upstream. Marcar com `# C13 INTEGRATION: fallback local quando Blob indisponível`. Tecnicamente é melhoria (Blob continua funcionando se configurado).
+
+### J.4 — Fix conversa `/chat` reseta visualmente ao navegar (Item 8 do checklist I3)
+
+**Sintoma:** ao sair do `/chat` e voltar, área de conversa aparece vazia. Estado backend pode estar preservado no `dcc.Store(session-data)`, mas UI não rehidrata.
+
+**Hipóteses:**
+- Store funciona, mas callback inicial do `chat.py` não lê mensagens do Store ao renderizar a página.
+- Conflito entre Store global e estado local do `chat.py`.
+- `pages/chat.py` original do `blua-cardio` foi escrito assumindo SPA single-page, sem rehidratação ao re-entrar na rota.
+
+**Trabalho:** debug do callback inicial + integração explícita do Store com display de mensagens. Adicionar botão "Nova conversa" pra reset explícito (Filipe pediu).
+
+### J.5 — Fix dropdown topbar não mostra valor selecionado
+
+**Sintoma:** dropdown PERFIL no topbar aparece visualmente vazio mesmo com `value="GABRIEL"` hardcoded. Capturado em screenshot do smoke I3.
+
+**Hipóteses:**
+- CSS de `.hud-topbar__telemetry` quebrando renderização do `<select>` interno do Dash Dropdown.
+- `storage_type="session"` do Store dessincronizando com valor renderizado.
+- Falta de callback initial pra setar value baseado no Store.
+
+**Trabalho:** inspecionar DevTools, isolar causa, fix CSS ou callback.
+
+### J.6 — Feedback visual claro de qual perfil está ativo
+
+**STATUS: resolvido implicitamente por J.5** (sem código adicional).
+
+A motivação original deste item ("como não dá pra ver o nome, não tem certeza se o perfil é mudado completamente") tinha como causa raiz o bug do dropdown topbar invisível — corrigido em J.5. Agora que o nome do perfil ativo aparece claramente no dropdown PERFIL (topbar), o feedback visual de seleção já é suficiente para a demo. Decisão tomada durante execução do bloco UX (após J.7).
+
+Caso queiramos reforço visual no futuro (header "Perfil ativo: X" por página, toast ao trocar, badge no dropdown), as opções permanecem documentadas abaixo como referência:
+
+- Header de cada página mostrando "Perfil ativo: X" (gabriel.py upstream já tem parcialmente — replicar em meu_perfil.py e pacientes.py).
+- Toast/notificação ao trocar dropdown.
+- Indicador visual no próprio dropdown (badge, cor, etc).
+
+### J.7 — Unificar dropdown `/chat` com topbar (inclui ex-K.1)
+
+**Problemas combinados:**
+
+1. **Inconsistência visual:** `dashboard/pages/chat.py` linha 84-91 tem `BENEFICIARIOS` hardcoded com 5+ perfis (Gabriel + 4 BENEF-001 a BENEF-CV-003). Topbar mostra só 2 (Gabriel + MEU_PERFIL). Inconsistência visível.
+
+2. **Limitação visual do criar_perfil_paciente** (anteriormente classificado como bug "K.1"): achado empírico durante I3 (teste com perfil "Garfield" BENEF-NEW-001) provou que a tool **SALVA corretamente** no JSON. O problema percebido como "não salva" é que o dropdown hardcoded do `/chat` não atualiza dinamicamente. Perfis criados via chatbot ficam invisíveis no dropdown, dando impressão errônea de falha.
+
+**Trabalho:** substituir lista hardcoded por `list_patients()` dinâmico de `shared.patient_registry`. Ou: filtrar pra mostrar apenas Gabriel + MEU_PERFIL pra alinhar com topbar (BENEFs ficam acessíveis pelo chatbot via tool calls, não via dropdown).
+
+Após J.7, perfis criados via `criar_perfil_paciente` aparecerão no dropdown automaticamente.
+
+---
+
+## Fora de escopo (decisão futura de Filipe)
+
+### Out.1 — Atualização do `README.md` raiz
+
+Mantido upstream literal por enquanto (C12). Filipe atualiza pós-decisão de merge.
+
+### Out.2 — Push pro remoto `ArrhythmiaMonitor`
+
+Branch `integracao-arrhythmiamonitor` no repo local `blua-cardio`. Push pro GitHub do `ArrhythmiaMonitor` é decisão futura.
+
+### Out.3 — Features pendentes do README upstream — TOTALMENTE FECHADO ✓
+
+**3 de 3 features resolvidas** (2 implementadas + 1 implícita):
+
+- ~~Agendamento de consultas no Blob.~~ **Status: ✓ implementado.** Dual-write Blob primário + local backup em `src/tools/agendamento.py` (commit `50719a4`). API pública intacta — `agendar_teleconsulta` ganha 2 campos no return (`registro_blob`, `registro_local`). Sem Azure configurado: comporta-se como antes (só local). Com Azure: container 'dataset', blob 'consultas_<paciente_id>.json', read-modify-write upsert.
+- ~~Relatório de registros recentes via `load_blob`.~~ **Status: ✓ implementado.** Tool `gerar_relatorio_telemetria(n_registros=N)` em `src/tools/relatorio.py` (commit `efda06c`). Complementa `consultar_telemetria_dashboard` (que é por paciente) com visão GLOBAL agregada do dataset. Registrada em agents `checkup` e `suporte`. Retorna BPM médio/mín/máx, % irregulares, total anômalos + texto pt-BR pro chatbot incorporar.
+- ~~Refinamento de RAG pra dúvidas sobre Warfarina/Atenolol/Losartana.~~ **Status: ✓ resolvido implicitamente.** Investigação F3 (maio/2026) confirmou que a integração do blua-cardio trouxe knowledge_base completo + pipeline RAG ativo em 4 agents (checkup, prescricao, suporte, triagem). Scores >0.92 nas 3 queries de teste (Warfarina/INR → 0.94, Atenolol/taquicardia → 0.93, Losartana/função renal → 0.93). Cobertura existente em `anti_coagulante_bula_resumida.md`, `anti_hipertensivos_bula_resumida.md`, `diretrizes_sbc_hipertensao_arritmia.md`, `protocolo_triagem_cardiovascular.md`.
+
+### Out.4 — Setup Azure Blob real
+
+~~Se J.3 (bypass com CSV local) for suficiente pra demo, Azure real pode ser indefinidamente adiado.~~
+
+**Status: ✓ implementado.** Azure Blob configurado com sucesso (account `heartmonitordataset`, container `dataset`). Smoke end-to-end confirmou:
+- `load_blob()` retorna ~2658 linhas reais do Blob (vs 1443 do fallback local J.3)
+- `agendar_teleconsulta` dual-write funcional (Blob primário + local backup) — blob `consultas_<paciente_id>.json` criado com sucesso durante smoke
+- `gerar_relatorio_telemetria` opera sobre dataset real do Blob
+
+`azure-storage-blob 12.29.0` adicionada ao `requirements.txt` (commit `5f18aa9`). Connection string em `.env` (gitignored, nunca commitada).
+
+Demo local sem Azure continua funcional via fallback CSV automático (J.3). Toggle automático: setar `AZURE_STORAGE_CONNECTION_STRING` → modo cloud; remover → modo local.
+
+---
+
+**Total:** 7 itens Fase J + 4 itens fora de escopo = 11 pendências documentadas.
+
+---
+
+## Notas de cleanup durante fechamento Fase I
+
+Durante I3 (smoke browser manual), Filipe testou a tool `criar_perfil_paciente` criando perfil de teste "Garfield" (BENEF-NEW-001, condição hipertensão). O perfil foi removido do JSON no cleanup pré-commit I4 — era dado de teste descartável, não destinado a permanecer no repo. O teste em si serviu de evidência empírica importante (ver J.7).
+
+`meu_perfil_data.csv` (gerado por Claude em maio/2026) foi movido de raiz pra `dashboard/data/` e está gitignorado temporariamente. Será integrado formalmente em J.2.
+
+**Última atualização:** maio/2026, Fase J completa (8 de 8 itens).

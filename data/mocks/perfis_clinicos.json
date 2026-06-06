@@ -1,0 +1,406 @@
+{
+  "beneficiarios": [
+    {
+      "id": "GABRIEL",
+      "nome": "Gabriel Oliveira",
+      "nascimento": "1988-03-14",
+      "idade": 38,
+      "sexo": "masculino",
+      "plano": "Care Plus",
+      "score_risco_cardiovascular": "alto",
+      "cha2ds2_va": 2,
+      "condicoes_ativas": [
+        {
+          "cid": "I48",
+          "nome": "Fibrilação atrial paroxística",
+          "desde": "2023-08",
+          "status": "ativa"
+        },
+        {
+          "cid": "I10",
+          "nome": "Hipertensão arterial sistêmica",
+          "desde": "2021-02",
+          "status": "controlada"
+        }
+      ],
+      "medicacoes_ativas": [
+        {
+          "nome": "Apixabana",
+          "dose": "5 mg",
+          "frequencia": "2x/dia",
+          "indicacao": "Anticoagulação (FA)",
+          "inicio": "2023-08"
+        },
+        {
+          "nome": "Metoprolol",
+          "dose": "50 mg",
+          "frequencia": "1x/dia",
+          "indicacao": "Controle de frequência",
+          "inicio": "2023-09"
+        },
+        {
+          "nome": "Losartana",
+          "dose": "50 mg",
+          "frequencia": "1x/dia",
+          "indicacao": "Hipertensão",
+          "inicio": "2021-02"
+        }
+      ],
+      "alergias": [
+        "Dipirona"
+      ],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-05-28",
+        "pressao_arterial": "138/86",
+        "frequencia_cardiaca": 88,
+        "saturacao_oxigenio": 97,
+        "peso_kg": 84.0,
+        "altura_cm": 178,
+        "imc": 26.5
+      },
+      "consultas": {
+        "ultima": {
+          "data": "2026-05-10",
+          "especialidade": "Cardiologia",
+          "medico": "Dr. Robert Chase — CRM SP-178432",
+          "observacoes": "Episódios paroxísticos persistem. Ajustada anticoagulação.",
+          "plataforma": "Blua Care Plus"
+        },
+        "proxima": {
+          "data": "2026-07-10",
+          "especialidade": "Cardiologia",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "data": "2026-05-05",
+          "tipo": "Eletrocardiograma",
+          "resultado": "FA com resposta ventricular controlada",
+          "laudo": "Ritmo irregular compatível com FA. Frequência média 88 bpm."
+        },
+        {
+          "data": "2026-04-20",
+          "tipo": "Ecocardiograma",
+          "resultado": "Função sistólica preservada",
+          "laudo": "FE 58%. Átrio esquerdo levemente dilatado."
+        }
+      ],
+      "anotacoes_medicas": [
+        {
+          "data": "2026-05-10",
+          "medico": "Dr. Robert Chase",
+          "texto": "Paciente relatou aderência regular à Apixabana. Refere palpitações ocasionais aos esforços. Manter conduta e reavaliar em 2 meses."
+        }
+      ]
+    },
+    {
+      "id": "LUCAS",
+      "nome": "Lucas Andrade",
+      "nascimento": "1992-11-22",
+      "idade": 33,
+      "sexo": "masculino",
+      "plano": "Care Plus",
+      "score_risco_cardiovascular": "baixo",
+      "cha2ds2_va": 0,
+      "condicoes_ativas": [],
+      "medicacoes_ativas": [],
+      "alergias": [],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-05-30",
+        "pressao_arterial": "118/72",
+        "frequencia_cardiaca": 68,
+        "saturacao_oxigenio": 99,
+        "peso_kg": 74.0,
+        "altura_cm": 177,
+        "imc": 23.6
+      },
+      "consultas": {
+        "ultima": {
+          "data": "2026-05-15",
+          "especialidade": "Cardiologia",
+          "medico": "Dr. Robert Chase — CRM SP-178432",
+          "observacoes": "Check-up de rotina. Paciente assintomático, exame normal.",
+          "plataforma": "Blua Care Plus"
+        },
+        "proxima": {
+          "data": "2026-11-15",
+          "especialidade": "Cardiologia",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "data": "2026-05-12",
+          "tipo": "Eletrocardiograma de repouso",
+          "resultado": "Ritmo sinusal normal",
+          "laudo": "Sem alterações isquêmicas ou arritmias. ECG dentro da normalidade."
+        }
+      ],
+      "anotacoes_medicas": [
+        {
+          "data": "2026-05-15",
+          "medico": "Dr. Robert Chase",
+          "texto": "Paciente jovem, sem fatores de risco relevantes. Orientado sobre hábitos saudáveis. Acompanhamento anual."
+        }
+      ]
+    },
+    {
+      "id": "MARIA",
+      "nome": "Maria Almeida",
+      "nascimento": "1959-06-08",
+      "idade": 67,
+      "sexo": "feminino",
+      "plano": "Care Plus",
+      "score_risco_cardiovascular": "moderado",
+      "cha2ds2_va": 3,
+      "condicoes_ativas": [
+        {
+          "cid": "I48",
+          "nome": "Fibrilação atrial",
+          "desde": "2019-11",
+          "status": "controlada"
+        },
+        {
+          "cid": "I10",
+          "nome": "Hipertensão arterial sistêmica",
+          "desde": "2010-05",
+          "status": "controlada"
+        }
+      ],
+      "medicacoes_ativas": [
+        {
+          "nome": "Varfarina",
+          "dose": "5 mg",
+          "frequencia": "1x/dia",
+          "indicacao": "Anticoagulação (FA)",
+          "inicio": "2019-11"
+        },
+        {
+          "nome": "Atenolol",
+          "dose": "50 mg",
+          "frequencia": "1x/dia",
+          "indicacao": "Controle de frequência",
+          "inicio": "2019-12"
+        },
+        {
+          "nome": "Hidroclorotiazida",
+          "dose": "25 mg",
+          "frequencia": "1x/dia",
+          "indicacao": "Hipertensão",
+          "inicio": "2010-05"
+        }
+      ],
+      "alergias": [],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-05-27",
+        "pressao_arterial": "128/78",
+        "frequencia_cardiaca": 72,
+        "saturacao_oxigenio": 98,
+        "peso_kg": 68.0,
+        "altura_cm": 160,
+        "imc": 26.6
+      },
+      "consultas": {
+        "ultima": {
+          "data": "2026-05-08",
+          "especialidade": "Cardiologia",
+          "medico": "Dr. Robert Chase — CRM SP-178432",
+          "observacoes": "FA estável e bem controlada. INR na faixa terapêutica.",
+          "plataforma": "Blua Care Plus"
+        },
+        "proxima": {
+          "data": "2026-08-08",
+          "especialidade": "Cardiologia",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "data": "2026-05-02",
+          "tipo": "INR",
+          "resultado": "2.4 (faixa terapêutica)",
+          "laudo": "Anticoagulação adequada. Manter dose de Varfarina."
+        },
+        {
+          "data": "2026-04-15",
+          "tipo": "Eletrocardiograma",
+          "resultado": "FA com frequência controlada",
+          "laudo": "Resposta ventricular média 72 bpm. Estável."
+        }
+      ],
+      "anotacoes_medicas": [
+        {
+          "data": "2026-05-08",
+          "medico": "Dr. Robert Chase",
+          "texto": "Paciente idosa com FA de longa data, bem controlada. Relatou tomar Varfarina regularmente e comparecer aos controles de INR. Sem episódios sintomáticos. Manter conduta."
+        }
+      ]
+    },
+    {
+      "id": "HELENA",
+      "nome": "Helena Souza",
+      "nascimento": "1968-01-30",
+      "idade": 58,
+      "sexo": "feminino",
+      "plano": "Care Plus",
+      "score_risco_cardiovascular": "alto",
+      "cha2ds2_va": 1,
+      "condicoes_ativas": [
+        {
+          "cid": "I21",
+          "nome": "Infarto agudo do miocárdio (prévio)",
+          "desde": "2026-03",
+          "status": "em recuperação"
+        },
+        {
+          "cid": "I10",
+          "nome": "Hipertensão arterial sistêmica",
+          "desde": "2015-09",
+          "status": "ativa"
+        },
+        {
+          "cid": "E78",
+          "nome": "Dislipidemia",
+          "desde": "2015-09",
+          "status": "ativa"
+        }
+      ],
+      "medicacoes_ativas": [
+        {
+          "nome": "AAS",
+          "dose": "100 mg",
+          "frequencia": "1x/dia",
+          "indicacao": "Antiagregação (pós-IAM)",
+          "inicio": "2026-03"
+        },
+        {
+          "nome": "Atorvastatina",
+          "dose": "40 mg",
+          "frequencia": "1x/dia",
+          "indicacao": "Dislipidemia",
+          "inicio": "2026-03"
+        },
+        {
+          "nome": "Enalapril",
+          "dose": "10 mg",
+          "frequencia": "2x/dia",
+          "indicacao": "Pós-IAM / HAS",
+          "inicio": "2026-03"
+        },
+        {
+          "nome": "Bisoprolol",
+          "dose": "5 mg",
+          "frequencia": "1x/dia",
+          "indicacao": "Beta-bloqueio pós-IAM",
+          "inicio": "2026-03"
+        }
+      ],
+      "alergias": [
+        "Penicilina"
+      ],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-05-29",
+        "pressao_arterial": "142/90",
+        "frequencia_cardiaca": 84,
+        "saturacao_oxigenio": 96,
+        "peso_kg": 78.0,
+        "altura_cm": 162,
+        "imc": 29.7
+      },
+      "consultas": {
+        "ultima": {
+          "data": "2026-05-20",
+          "especialidade": "Cardiologia",
+          "medico": "Dr. Robert Chase — CRM SP-178432",
+          "observacoes": "Pós-IAM recente. Telemetria com irregularidades. Vigilância estreita.",
+          "plataforma": "Blua Care Plus"
+        },
+        "proxima": {
+          "data": "2026-06-20",
+          "especialidade": "Cardiologia",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "data": "2026-05-18",
+          "tipo": "Eletrocardiograma",
+          "resultado": "Extrassístoles ventriculares frequentes",
+          "laudo": "ESV frequentes em pós-IAM. Considerar Holter."
+        },
+        {
+          "data": "2026-03-12",
+          "tipo": "Cateterismo",
+          "resultado": "Stent em DA",
+          "laudo": "Angioplastia com stent em artéria descendente anterior. Sucesso angiográfico."
+        }
+      ],
+      "anotacoes_medicas": [
+        {
+          "data": "2026-05-20",
+          "medico": "Dr. Robert Chase",
+          "texto": "Paciente em recuperação de IAM com stent. Telemetria recente mostra extrassístoles frequentes — monitorar de perto. Relatou aderência à medicação pós-IAM. Solicitar Holter de 24h na próxima consulta."
+        }
+      ]
+    },
+    {
+      "id": "PEDRO",
+      "nome": "Pedro Santos",
+      "nascimento": "2016-09-17",
+      "idade": 9,
+      "sexo": "masculino",
+      "plano": "Care Plus",
+      "score_risco_cardiovascular": "baixo",
+      "cha2ds2_va": null,
+      "condicoes_ativas": [
+        {
+          "cid": "I49.8",
+          "nome": "Arritmia sinusal (benigna)",
+          "desde": "2025-10",
+          "status": "em acompanhamento"
+        }
+      ],
+      "medicacoes_ativas": [],
+      "alergias": [],
+      "sinais_vitais_ultimo_registro": {
+        "data": "2026-05-26",
+        "pressao_arterial": "98/62",
+        "frequencia_cardiaca": 92,
+        "saturacao_oxigenio": 99,
+        "peso_kg": 31.0,
+        "altura_cm": 134,
+        "imc": 17.3
+      },
+      "consultas": {
+        "ultima": {
+          "data": "2026-05-12",
+          "especialidade": "Cardiologia pediátrica",
+          "medico": "Dr. Robert Chase — CRM SP-178432",
+          "observacoes": "Arritmia sinusal benigna, comum na idade. Sem repercussão clínica.",
+          "plataforma": "Blua Care Plus"
+        },
+        "proxima": {
+          "data": "2026-11-12",
+          "especialidade": "Cardiologia pediátrica",
+          "status": "agendada"
+        }
+      },
+      "exames_recentes": [
+        {
+          "data": "2026-05-08",
+          "tipo": "Eletrocardiograma pediátrico",
+          "resultado": "Arritmia sinusal respiratória",
+          "laudo": "Variação de frequência com a respiração. Achado benigno e fisiológico para a idade."
+        }
+      ],
+      "anotacoes_medicas": [
+        {
+          "data": "2026-05-12",
+          "medico": "Dr. Robert Chase",
+          "texto": "Criança de 9 anos com arritmia sinusal respiratória — achado benigno e comum nessa faixa etária. FC basal de ~92 bpm normal para a idade. Pais orientados, sem necessidade de medicação. Acompanhamento de rotina."
+        }
+      ]
+    }
+  ]
+}

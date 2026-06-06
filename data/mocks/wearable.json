@@ -1,0 +1,140 @@
+{
+  "leituras": [
+    {
+      "beneficiario_id": "BENEF-001",
+      "dispositivo": "apple_health",
+      "modelo": "Apple Watch Series 9",
+      "ultima_sincronizacao": "2026-05-15T08:32:00",
+      "ultima_leitura": {
+        "timestamp": "2026-05-15T08:32:00",
+        "frequencia_cardiaca_bpm": 74,
+        "hrv_ms": 42.3,
+        "saturacao_oxigenio_pct": 97,
+        "passos_hoje": 3241,
+        "status_ritmo": "sinusal_regular"
+      },
+      "serie_ibi": [
+        {
+          "timestamp_s": 0.0,
+          "IBI_ms": 820.0,
+          "BPM": 73,
+          "media_IBI": 825.4,
+          "desvio_medio": 15.2,
+          "batimentos_anormais": 0,
+          "classificacao": "regular"
+        },
+        {
+          "timestamp_s": 30.0,
+          "IBI_ms": 834.0,
+          "BPM": 72,
+          "media_IBI": 841.2,
+          "desvio_medio": 18.4,
+          "batimentos_anormais": 0,
+          "classificacao": "regular"
+        },
+        {
+          "timestamp_s": 60.0,
+          "IBI_ms": 810.0,
+          "BPM": 74,
+          "media_IBI": 828.6,
+          "desvio_medio": 20.1,
+          "batimentos_anormais": 1,
+          "classificacao": "regular"
+        }
+      ],
+      "nota": "Dados simulados para PoC acadêmica — não representam leitura clínica real."
+    },
+
+    {
+      "beneficiario_id": "BENEF-002",
+      "dispositivo": "google_fit",
+      "modelo": "Samsung Galaxy Watch 6",
+      "ultima_sincronizacao": "2026-05-15T07:15:00",
+      "ultima_leitura": {
+        "timestamp": "2026-05-15T07:15:00",
+        "frequencia_cardiaca_bpm": 91,
+        "hrv_ms": 28.7,
+        "saturacao_oxigenio_pct": 96,
+        "passos_hoje": 812,
+        "status_ritmo": "irregular_detectado"
+      },
+      "serie_ibi": [
+        {
+          "timestamp_s": 0.0,
+          "IBI_ms": 1240.0,
+          "BPM": 48,
+          "media_IBI": 1102.6,
+          "desvio_medio": 187.3,
+          "batimentos_anormais": 4,
+          "classificacao": "irregular"
+        },
+        {
+          "timestamp_s": 30.0,
+          "IBI_ms": 980.0,
+          "BPM": 61,
+          "media_IBI": 1054.2,
+          "desvio_medio": 201.5,
+          "batimentos_anormais": 5,
+          "classificacao": "irregular"
+        },
+        {
+          "timestamp_s": 60.0,
+          "IBI_ms": 1180.0,
+          "BPM": 51,
+          "media_IBI": 1098.8,
+          "desvio_medio": 195.4,
+          "batimentos_anormais": 4,
+          "classificacao": "irregular"
+        }
+      ],
+      "alerta_disparado": true,
+      "motivo_alerta": "4 ou mais registros irregulares em janela de 5 — alerta por email enviado pelo sistema de monitoramento.",
+      "nota": "Dados simulados para PoC acadêmica — não representam leitura clínica real."
+    },
+
+    {
+      "beneficiario_id": "BENEF-003",
+      "dispositivo": "oura",
+      "modelo": "Oura Ring Gen 3",
+      "ultima_sincronizacao": "2026-05-15T06:45:00",
+      "ultima_leitura": {
+        "timestamp": "2026-05-15T06:45:00",
+        "frequencia_cardiaca_bpm": 68,
+        "hrv_ms": 51.2,
+        "saturacao_oxigenio_pct": 98,
+        "passos_hoje": 520,
+        "status_ritmo": "sinusal_regular"
+      },
+      "serie_ibi": [
+        {
+          "timestamp_s": 0.0,
+          "IBI_ms": 882.0,
+          "BPM": 68,
+          "media_IBI": 878.4,
+          "desvio_medio": 12.8,
+          "batimentos_anormais": 0,
+          "classificacao": "regular"
+        },
+        {
+          "timestamp_s": 30.0,
+          "IBI_ms": 875.0,
+          "BPM": 69,
+          "media_IBI": 880.2,
+          "desvio_medio": 14.1,
+          "batimentos_anormais": 0,
+          "classificacao": "regular"
+        },
+        {
+          "timestamp_s": 60.0,
+          "IBI_ms": 891.0,
+          "BPM": 67,
+          "media_IBI": 876.8,
+          "desvio_medio": 13.5,
+          "batimentos_anormais": 0,
+          "classificacao": "regular"
+        }
+      ],
+      "nota": "Dados simulados para PoC acadêmica — não representam leitura clínica real."
+    }
+  ]
+}

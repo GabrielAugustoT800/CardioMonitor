@@ -1,0 +1,17 @@
+{
+  "medicos": [
+    {
+      "id": "MED-001",
+      "nome": "Dr. Robert Chase",
+      "crm": "SP-178432",
+      "especialidade": "Cardiologia",
+      "pacientes": [
+        "GABRIEL",
+        "LUCAS",
+        "MARIA",
+        "HELENA",
+        "PEDRO"
+      ]
+    }
+  ]
+}

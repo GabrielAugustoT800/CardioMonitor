@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blua-cardio"
+version = "0.1.0"
+description = "Plataforma cardiovascular integrada: chatbot multi-agente LangGraph (pt-BR) + dashboard de telemetria PPG/BPM ao vivo (ESP32 + MAX30100)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "blua-cardio contributors" },
+]
+keywords = ["cardiology", "langgraph", "rag", "dash", "ppg", "telemetry", "esp32", "max30100"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Healthcare Industry",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: Portuguese (Brazilian)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dynamic = ["dependencies"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+# Le as deps do requirements.txt - unica source of truth
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "shared*"]
+exclude = ["tests*", "dashboard_legacy*", "blua_merge_files*", "knowledge_base*", "prompts*"]

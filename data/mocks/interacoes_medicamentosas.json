@@ -1,0 +1,53 @@
+{
+  "interacoes": [
+    {
+      "par": ["Losartana", "Ibuprofeno"],
+      "severidade": "moderada",
+      "mecanismo": "AINEs reduzem efeito anti-hipertensivo de BRAs e aumentam risco de lesão renal aguda.",
+      "manifestacao_clinica": "Redução do controle pressórico, possível elevação de creatinina.",
+      "recomendacao": "Evitar uso prolongado. Substituir por paracetamol sempre que possível."
+    },
+    {
+      "par": ["Atenolol", "Verapamil"],
+      "severidade": "grave",
+      "mecanismo": "Efeito aditivo de bloqueio do nó AV e depressão da contratilidade miocárdica.",
+      "manifestacao_clinica": "Bradicardia severa, bloqueio AV, hipotensão, insuficiência cardíaca aguda.",
+      "recomendacao": "Contraindicado sem supervisão hospitalar. Escalar para médico imediatamente."
+    },
+    {
+      "par": ["Warfarina", "AAS"],
+      "severidade": "grave",
+      "mecanismo": "Dupla antiagregação e anticoagulação aumenta significativamente risco de sangramento.",
+      "manifestacao_clinica": "Sangramento gastrointestinal, cerebral ou em outros sítios.",
+      "recomendacao": "Uso apenas sob indicação e monitoramento médico rigoroso. Não iniciar sem orientação."
+    },
+    {
+      "par": ["Warfarina", "Ibuprofeno"],
+      "severidade": "grave",
+      "mecanismo": "AINEs potencializam efeito anticoagulante da warfarina e aumentam risco de sangramento GI.",
+      "manifestacao_clinica": "Sangramento gastrointestinal, hematomas, INR elevado.",
+      "recomendacao": "Contraindicado. Usar paracetamol como alternativa analgésica."
+    },
+    {
+      "par": ["Enalapril", "Espironolactona"],
+      "severidade": "moderada",
+      "mecanismo": "Ambos retêm potássio — risco de hipercalemia especialmente em insuficiência renal.",
+      "manifestacao_clinica": "Hipercalemia — fraqueza muscular, arritmia, parada cardíaca em casos graves.",
+      "recomendacao": "Monitorar potássio sérico regularmente. Combinação usada com cautela em IC."
+    },
+    {
+      "par": ["Losartana", "Paracetamol"],
+      "severidade": "nenhuma",
+      "mecanismo": "Sem interação farmacodinâmica ou farmacocinética clinicamente relevante.",
+      "manifestacao_clinica": "Nenhuma esperada.",
+      "recomendacao": "Uso concomitante seguro. Paracetamol é o analgésico de escolha para hipertensos."
+    },
+    {
+      "par": ["Anlodipino", "Sinvastatina"],
+      "severidade": "leve",
+      "mecanismo": "Anlodipino inibe CYP3A4, podendo aumentar níveis plasmáticos de sinvastatina.",
+      "manifestacao_clinica": "Risco discretamente aumentado de miopatia em doses altas de sinvastatina.",
+      "recomendacao": "Manter dose de sinvastatina abaixo de 20mg quando em uso com anlodipino."
+    }
+  ]
+}
