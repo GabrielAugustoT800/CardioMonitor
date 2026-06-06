@@ -43,6 +43,7 @@ from .paths import (
     TELEMETRY_CSV,
     GABRIEL_CSV,
     MEU_PERFIL_CSV,
+    LUCAS_CSV,
     MARIA_CSV,
     HELENA_CSV,
     PEDRO_CSV,
@@ -54,9 +55,13 @@ _ALIAS: dict[str, list[str]] = {
     # GABRIEL é o paciente canônico — alinhado com o dataset de referência
     # do dashboard ("gabriel_data.csv" com 200 batimentos).
     "GABRIEL": ["GABRIEL", "Gabriel", "live", "live-sim"],
-    # MEU_PERFIL (J.2 Fase J) — dataset saudável demonstrativo
-    # ("meu_perfil_data.csv" com 200 batimentos, BPM 65-76, 100% regular).
-    "MEU_PERFIL": ["MEU_PERFIL", "Meu Perfil", "meu_perfil"],
+    # MEU_PERFIL (J.2 Fase J) — dataset saudável demonstrativo. Mantido por
+    # compatibilidade; renomeado pra LUCAS na fundação do app médico.
+    "MEU_PERFIL": ["MEU_PERFIL", "Meu Perfil", "meu_perfil", "Lucas"],
+    # LUCAS (ex-MEU_PERFIL) — id canônico atual do perfil saudável. Aliases
+    # cobrem nome capitalizado (coluna patient do lucas_data.csv) + a forma
+    # antiga MEU_PERFIL pra transição até a refatoração do dropdown.
+    "LUCAS": ["LUCAS", "Lucas", "lucas", "MEU_PERFIL", "Meu Perfil"],
     # Pacientes da clínica do Dr. Robert Chase (fase fundação app médico).
     "MARIA": ["MARIA", "Maria", "maria"],
     "HELENA": ["HELENA", "Helena", "helena"],
@@ -70,6 +75,8 @@ _ALIAS: dict[str, list[str]] = {
 # análogo ao GABRIEL que já existia pra gabriel_data.csv.
 _FALLBACK_CSV_BY_ID: dict[str, "Path"] = {
     "GABRIEL": GABRIEL_CSV,
+    "LUCAS": LUCAS_CSV,
+    # MEU_PERFIL_CSV == LUCAS_CSV (alias temporário) — mantido pra compat.
     "MEU_PERFIL": MEU_PERFIL_CSV,
     "MARIA": MARIA_CSV,
     "HELENA": HELENA_CSV,
