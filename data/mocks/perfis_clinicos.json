@@ -47,7 +47,11 @@
         }
       ],
       "alergias": [
-        "Dipirona"
+        {
+          "substancia": "Dipirona",
+          "reacao": "urticária",
+          "gravidade": "moderada"
+        }
       ],
       "sinais_vitais_ultimo_registro": {
         "data": "2026-05-28",
@@ -297,7 +301,11 @@
         }
       ],
       "alergias": [
-        "Penicilina"
+        {
+          "substancia": "Penicilina",
+          "reacao": "rash cutâneo",
+          "gravidade": "moderada"
+        }
       ],
       "sinais_vitais_ultimo_registro": {
         "data": "2026-05-29",
