@@ -85,7 +85,7 @@ def agente_prescricao(
     resposta = chat(
         messages=mensagens,
         tools=_TOOLS_PRESCRICAO,
-        enable_thinking=True,
+        enable_thinking=False,  # TURBO: latência (lote 1)
         temperature=TEMPERATURA_PADRAO,
     )
 
@@ -129,7 +129,7 @@ def agente_prescricao(
         resposta = chat(
             messages=mensagens,
             tools=_TOOLS_PRESCRICAO,
-            enable_thinking=True,
+            enable_thinking=False,  # TURBO: latência (lote 1)
             temperature=TEMPERATURA_PADRAO,
         )
 

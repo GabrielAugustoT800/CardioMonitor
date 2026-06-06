@@ -86,7 +86,7 @@ def agente_triagem(
     resposta = chat(
         messages=mensagens,
         tools=_TOOLS_TRIAGEM,
-        enable_thinking=True,
+        enable_thinking=False,  # TURBO: latência (lote 1)
         temperature=TEMPERATURA_RACIOCINIO,
     )
 
@@ -120,7 +120,7 @@ def agente_triagem(
         resposta = chat(
             messages=mensagens,
             tools=_TOOLS_TRIAGEM,
-            enable_thinking=True,
+            enable_thinking=False,  # TURBO: latência (lote 1)
             temperature=TEMPERATURA_RACIOCINIO,
         )
 

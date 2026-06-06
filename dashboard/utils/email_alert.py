@@ -14,22 +14,43 @@ EMAIL_REMETENTE = os.getenv("EMAIL_REMETENTE")
 EMAIL_SENHA = os.getenv("SENHA_REMETENTE")
 
 
-DESTINATARIOS = [
-    os.getenv("EMAIL_DESTINATARIO_1")
-]
+# Filtra None: se EMAIL_DESTINATARIO_1 ausente, DESTINATARIOS=[] (não [None]),
+# evitando TypeError em ", ".join([None]).
+DESTINATARIOS = [d for d in [os.getenv("EMAIL_DESTINATARIO_1")] if d]
 
 ULTIMO_ENVIO = 0
 COOLDOWN = 300 # segundos
 
+
+def _alerts_habilitados() -> bool:
+    """Opt-in via BLUA_EMAIL_ALERTS=enabled. Default desabilitado pra demo."""
+    return os.getenv("BLUA_EMAIL_ALERTS", "disabled").lower() == "enabled"
+
+
+def _smtp_configurado() -> bool:
+    """Vars mínimas pra montar e enviar e-mail."""
+    return bool(EMAIL_REMETENTE and EMAIL_SENHA and DESTINATARIOS)
+
+
 def enviar_alerta(latest, irregulares):
     global ULTIMO_ENVIO
+
+    # Opt-in: sem BLUA_EMAIL_ALERTS=enabled, no-op silencioso.
+    if not _alerts_habilitados():
+        return
+
+    # Defensive: vars incompletas → log e retorna sem crashar.
+    if not _smtp_configurado():
+        print("[Email]: BLUA_EMAIL_ALERTS=enabled mas vars SMTP incompletas "
+              "(EMAIL_REMETENTE/SENHA_REMETENTE/EMAIL_DESTINATARIO_1)")
+        return
 
     agora = time.time()
 
     # evitar spam
     if agora - ULTIMO_ENVIO < COOLDOWN:
         return
-    
+
     assunto = "ALERTA CARDÍACO - Arritmia detectada"
     html = f"""
     <html>
@@ -143,14 +164,17 @@ def enviar_alerta(latest, irregulares):
 </html>
 """
     
-    email = MIMEMultipart()
-    email["From"] = EMAIL_REMETENTE
-    email["To"] = ", ".join(DESTINATARIOS)
-    email["Subject"] = assunto
-
-    email.attach(MIMEText(html, "html"))
-
+    # try/except cobre TUDO: construção MIME + SMTP. Antes o ", ".join(
+    # DESTINATARIOS) ficava FORA do try — TypeError com DESTINATARIOS=[None]
+    # bubblezava pra cima e crashava o callback _render do /monitor.
     try:
+        email = MIMEMultipart()
+        email["From"] = EMAIL_REMETENTE
+        email["To"] = ", ".join(DESTINATARIOS)
+        email["Subject"] = assunto
+
+        email.attach(MIMEText(html, "html"))
+
         servidor = smtplib.SMTP("smtp.gmail.com", 587)
         servidor.starttls()
 
@@ -168,4 +192,4 @@ def enviar_alerta(latest, irregulares):
         print("[Email]: Alerta enviado com sucesso.")
 
     except Exception as e:
-        print(f"[Email]: Erro ao enviar o alerta -> {e}")
+        print(f"[Email]: Erro ao enviar o alerta -> {type(e).__name__}: {e}")
