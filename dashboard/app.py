@@ -37,18 +37,25 @@ server = app.server
 
 # ---- static layout -------------------------------------------------------
 
-def _nav_links():
+def _nav_links(role_atual: str = "paciente"):
+    """Render inicial do nav, filtrado por papel. role metadata no
+    register_page: ausência = paciente. 'oculto' nunca aparece (ex: /login).
+    O callback _nav_active sobrescreve isto no primeiro pathname, mas o filtro
+    aqui evita flash de rotas do papel errado na carga inicial."""
     ordered = sorted(dash.page_registry.values(),
                      key=lambda p: p.get("order", 99))
-    return [
-        dcc.Link(
+    links = []
+    for p in ordered:
+        p_role = p.get("role", "paciente")
+        if p_role == "oculto" or p_role != role_atual:
+            continue
+        links.append(dcc.Link(
             p["name"].upper(),
             href=p["relative_path"],
             className="hud-nav-link",
             refresh=False,
-        )
-        for p in ordered
-    ]
+        ))
+    return links
 
 
 def _topbar():
@@ -125,6 +132,10 @@ app.layout = html.Div(className="app-shell", children=[
     # persistido com valor de sessão anterior. Telemetria (/monitor, /analise)
     # NÃO consome este Store — upstream usa dataset Azure Blob único.
     dcc.Store(id="perfil-ativo", data={"id": "GABRIEL"}, storage_type="session"),
+    # Papel ativo (app médico, fase 1): "paciente" (default, não quebra o
+    # estado atual) ou "medico". Setado no /login, lido pelo nav filtrado +
+    # guard de rota. storage_type="session" zera ao fechar aba.
+    dcc.Store(id="papel-ativo", storage_type="session", data={"role": "paciente"}),
     # J.1.b — trigger pra forçar reload de /meu-perfil após criar/editar perfil.
     # O dcc.Location não re-renderiza quando pathname retornado é igual ao atual
     # (ex: estamos em /meu-perfil e callback retorna /meu-perfil). Workaround:
@@ -156,12 +167,18 @@ def _tick(_n):
 @app.callback(
     Output("hud-nav", "children"),
     Input("hud-url", "pathname"),
+    Input("papel-ativo", "data"),
 )
-def _nav_active(pathname):
+def _nav_active(pathname, papel):
+    role_atual = (papel or {}).get("role", "paciente")
     ordered = sorted(dash.page_registry.values(),
                      key=lambda p: p.get("order", 99))
     links = []
     for p in ordered:
+        # role metadata: ausência = paciente; 'oculto' nunca no nav (/login).
+        p_role = p.get("role", "paciente")
+        if p_role == "oculto" or p_role != role_atual:
+            continue
         href = p["relative_path"]
         is_active = (pathname or "/") == href
         css_class = "hud-nav-link active" if is_active else "hud-nav-link"
@@ -223,6 +240,23 @@ def _sync_dropdown_to_url(pathname, current_value):
 # Callback _resetar_tick_rehidratacao REMOVIDO (lote 2 etapa 3): escrevia no
 # componente fantasma chat-rehidratar-tick que não existe no layout. A
 # rehidratação agora usa Input("beneficiario-select","value") em chat.py.
+
+
+# Guard de papel (app médico, fase 1): paciente tentando rota /medico/* é
+# redirecionado pro /login. allow_duplicate=True porque hud-url.pathname já
+# tem escritores (_trocar_perfil_ativo + login). prevent_initial_call=True
+# pra não disparar na carga inicial.
+@app.callback(
+    Output("hud-url", "pathname", allow_duplicate=True),
+    Input("hud-url", "pathname"),
+    State("papel-ativo", "data"),
+    prevent_initial_call=True,
+)
+def _guard_papel(pathname, papel):
+    role = (papel or {}).get("role", "paciente")
+    if pathname and pathname.startswith("/medico/") and role != "medico":
+        return "/login"
+    return dash.no_update
 
 
 if __name__ == "__main__":
