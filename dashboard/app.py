@@ -77,14 +77,20 @@ def _topbar():
                 html.Span("PERFIL", className="lbl"),
                 dcc.Dropdown(
                     id="topbar-perfil-dropdown",
+                    # Fase 2B: dropdown topbar lista os 5 pacientes da clinica
+                    # do Dr. Chase. Selecionar -> _trocar_perfil_ativo navega
+                    # pro /prontuario (render data-driven via render_prontuario).
                     options=[
-                        {"label": "Gabriel", "value": "GABRIEL"},
-                        {"label": "Meu Perfil", "value": "MEU_PERFIL"},
+                        {"label": "Gabriel Oliveira", "value": "GABRIEL"},
+                        {"label": "Lucas Andrade",    "value": "LUCAS"},
+                        {"label": "Maria Almeida",    "value": "MARIA"},
+                        {"label": "Helena Souza",     "value": "HELENA"},
+                        {"label": "Pedro Santos",     "value": "PEDRO"},
                     ],
                     value="GABRIEL",
                     clearable=False,
                     className="hud-topbar__dropdown",
-                    style={"minWidth": "140px", "marginLeft": "8px"},
+                    style={"minWidth": "180px", "marginLeft": "8px"},
                 ),
             ]),
             html.Div(className="tel", children=[
@@ -196,16 +202,21 @@ def _nav_active(pathname, papel):
 # Não filtra telemetria — upstream usa dataset Azure Blob único sem coluna
 # patient (decisão tomada em H.A.3 após investigação).
 @app.callback(
-    Output("perfil-ativo", "data"),
+    # allow_duplicate=True em perfil-ativo: chat.py:440
+    # (_sync_store_from_chat_dropdown) também escreve nesse Store.
+    Output("perfil-ativo", "data", allow_duplicate=True),
     Output("hud-url", "pathname", allow_duplicate=True),
     Input("topbar-perfil-dropdown", "value"),
     prevent_initial_call=True,
 )
 def _trocar_perfil_ativo(perfil_id):
+    """Trocar paciente no dropdown topbar -> atualiza Store + navega
+    pro /prontuario (decisao 'dropdown como navegacao principal',
+    fase 2B). Os 5 pacientes (GABRIEL, LUCAS, MARIA, HELENA, PEDRO)
+    rendem o mesmo prontuario data-driven via render_prontuario."""
     if not perfil_id:
         return dash.no_update, dash.no_update
-    rota = "/gabriel" if perfil_id == "GABRIEL" else "/meu-perfil"
-    return {"id": perfil_id}, rota
+    return {"id": perfil_id}, "/prontuario"
 
 
 # J.1.b fix-up (smoke final): label dinâmico do dropdown topbar REMOVIDO.
