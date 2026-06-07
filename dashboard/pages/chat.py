@@ -101,9 +101,11 @@ def _format_label(p: dict) -> str:
 
 def _eh_perfil_visivel(p: dict) -> bool:
     pid = p["id"]
+    # Os 5 pacientes da clínica do Dr. Robert Chase + perfis criados via
+    # chatbot (BENEF-NEW-*). MEU_PERFIL (id antigo) foi renomeado pra LUCAS
+    # na fundação. Maria/Helena/Pedro/Lucas agora aparecem no dropdown.
     return (
-        pid == "GABRIEL"
-        or pid == "MEU_PERFIL"
+        pid in {"GABRIEL", "LUCAS", "MARIA", "HELENA", "PEDRO"}
         or pid.startswith("BENEF-NEW-")
     )
 
@@ -382,12 +384,9 @@ layout = html.Div([
 
         ], className="grid grid-12col", style={"marginTop": "16px"}),
 
-        # Footer
-        html.Div([
-            html.Span(f"BluaDiagnostics Sprint 2 · Backend: {BACKEND_ATUAL.upper()} · "
-                      f"Modelo: {MODELO_ATUAL}"),
-            html.Span("⚕️ Este sistema não substitui avaliação médica · Em emergência: SAMU 192"),
-        ], className="hud-footer", style={"marginTop": "24px"}),
+        # Footer REMOVIDO (lote 2 etapa 1): o footer global em dashboard/app.py
+        # já mostra o disclaimer clínico em todas as rotas. Manter aqui criava
+        # barra duplicada + texto de dev (Sprint 2 / Backend / Modelo) no /chat.
 
     ], className="hud-page"),
 
