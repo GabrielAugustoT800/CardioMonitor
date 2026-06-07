@@ -77,20 +77,32 @@ def _topbar():
                 html.Span("PERFIL", className="lbl"),
                 dcc.Dropdown(
                     id="topbar-perfil-dropdown",
-                    # Fase 2B: dropdown topbar lista os 5 pacientes da clinica
-                    # do Dr. Chase. Selecionar -> _trocar_perfil_ativo navega
-                    # pro /prontuario (render data-driven via render_prontuario).
-                    options=[
-                        {"label": "Gabriel Oliveira", "value": "GABRIEL"},
-                        {"label": "Lucas Andrade",    "value": "LUCAS"},
-                        {"label": "Maria Almeida",    "value": "MARIA"},
-                        {"label": "Helena Souza",     "value": "HELENA"},
-                        {"label": "Pedro Santos",     "value": "PEDRO"},
-                    ],
-                    value="GABRIEL",
+                    # Fase 6: options agora sao dinamicas — _popular_dropdown
+                    # adapta conforme papel-ativo (paciente ve 5 + separador +
+                    # atalho medico; medico ve 5 "voltar como paciente").
+                    # Sem value hardcoded — evita disparar callback na carga
+                    # inicial antes do login.
+                    options=[],
+                    placeholder="Selecionar perfil...",
                     clearable=False,
                     className="hud-topbar__dropdown",
-                    style={"minWidth": "180px", "marginLeft": "8px"},
+                    style={"minWidth": "230px", "marginLeft": "8px"},
+                ),
+            ]),
+            # Botao 'Sair' dedicado (fase 6): limpa Stores + dropdown + vai /login.
+            # Sempre visivel — usuario nao logado nem deveria estar aqui mas o
+            # guard cuida disso.
+            html.Div(className="tel", children=[
+                html.Button(
+                    "SAIR",
+                    id="topbar-logout-btn",
+                    n_clicks=0,
+                    className="hud-btn hud-btn--ghost",
+                    style={
+                        "padding": "6px 14px", "fontSize": "0.74rem",
+                        "fontWeight": "700", "letterSpacing": "0.08em",
+                        "marginLeft": "8px",
+                    },
                 ),
             ]),
             html.Div(className="tel", children=[
@@ -141,7 +153,9 @@ app.layout = html.Div(className="app-shell", children=[
     # Papel ativo (app médico, fase 1): "paciente" (default, não quebra o
     # estado atual) ou "medico". Setado no /login, lido pelo nav filtrado +
     # guard de rota. storage_type="session" zera ao fechar aba.
-    dcc.Store(id="papel-ativo", storage_type="session", data={"role": "paciente"}),
+    # Fase 6: default None (nao logado) — guard redireciona pro /login.
+    # Login (pages/medico/login.py) seta {"role": "paciente"|"medico"}.
+    dcc.Store(id="papel-ativo", storage_type="session", data=None),
     # Trigger pra re-render do prontuario apos salvar anotacao clinica (fase 4a).
     # storage_type='memory' — so serve pra disparar callback no mesmo turno;
     # nao precisa persistir entre reloads (o arquivo runtime ja persiste).
@@ -237,26 +251,99 @@ def _nav_active(pathname, papel, _rascunhos_refresh):
     return links
 
 
-# C13: dropdown de perfil ativo (atalho de navegação contextual).
-# Atualiza dcc.Store(perfil-ativo) E navega pra rota do prontuário escolhido.
-# Não filtra telemetria — upstream usa dataset Azure Blob único sem coluna
-# patient (decisão tomada em H.A.3 após investigação).
+# Fase 6: dropdown topbar agora tem options dinamicas + 2 atalhos especiais.
+# _popular_dropdown injeta as opcoes conforme papel-ativo:
+#   - paciente: 5 pacientes + separador + atalho "Dr. Robert Chase (visao medico)"
+#   - medico:   5 pacientes com label "Voltar como paciente: X"
 @app.callback(
-    # allow_duplicate=True em perfil-ativo: chat.py:440
-    # (_sync_store_from_chat_dropdown) também escreve nesse Store.
+    Output("topbar-perfil-dropdown", "options"),
+    Input("papel-ativo", "data"),
+)
+def _popular_dropdown(papel_data):
+    """Options dinamicas pro dropdown topbar (fase 6).
+
+    role=paciente: 5 pacientes + separador + atalho medico (6 itens + sep).
+    role=medico:   5 entradas 'Voltar como paciente: X' (sem atalho medico).
+    role None/desconhecido: cai no default paciente (defensivo).
+    """
+    pacientes = [
+        {"label": "Gabriel Oliveira", "value": "GABRIEL"},
+        {"label": "Lucas Andrade",    "value": "LUCAS"},
+        {"label": "Maria Almeida",    "value": "MARIA"},
+        {"label": "Helena Souza",     "value": "HELENA"},
+        {"label": "Pedro Santos",     "value": "PEDRO"},
+    ]
+    papel = (papel_data or {}).get("role", "paciente")
+
+    if papel == "medico":
+        return [
+            {"label": f"← Voltar como paciente: {p['label']}",
+             "value": p["value"]}
+            for p in pacientes
+        ]
+
+    # Paciente (default): 5 + separador desabilitado + atalho medico
+    return [
+        *pacientes,
+        {"label": "─────────────────────────",
+         "value": "__SEPARATOR__", "disabled": True},
+        {"label": "Dr. Robert Chase (visão médico)",
+         "value": "__MEDICO_SHORTCUT__"},
+    ]
+
+
+# C13 + fase 6: trocar item do dropdown topbar dispara navegacao contextual.
+# 3 fluxos possiveis:
+#   - atalho __MEDICO_SHORTCUT__ (paciente -> medico): seta papel=medico,
+#     navega /medico/caseload, perfil-ativo intocado.
+#   - estando medico, seleciona paciente: seta papel=paciente, perfil-ativo
+#     do paciente, navega /prontuario (volta pra visao paciente).
+#   - estando paciente, seleciona outro paciente: troca perfil-ativo, navega
+#     /prontuario (comportamento da Fase 2B preservado).
+# __SEPARATOR__ e ignorado (disabled no dropdown mas defensivo aqui).
+@app.callback(
+    # allow_duplicate em todos os 3 outputs — sao escritos por outros callbacks
+    # (login, caseload, alertas, logout, chat.py para perfil-ativo).
     Output("perfil-ativo", "data", allow_duplicate=True),
+    Output("papel-ativo", "data", allow_duplicate=True),
     Output("hud-url", "pathname", allow_duplicate=True),
     Input("topbar-perfil-dropdown", "value"),
+    State("papel-ativo", "data"),
     prevent_initial_call=True,
 )
-def _trocar_perfil_ativo(perfil_id):
-    """Trocar paciente no dropdown topbar -> atualiza Store + navega
-    pro /prontuario (decisao 'dropdown como navegacao principal',
-    fase 2B). Os 5 pacientes (GABRIEL, LUCAS, MARIA, HELENA, PEDRO)
-    rendem o mesmo prontuario data-driven via render_prontuario."""
-    if not perfil_id:
-        return dash.no_update, dash.no_update
-    return {"id": perfil_id}, "/prontuario"
+def _trocar_perfil_ativo(novo_valor, papel_atual_data):
+    if not novo_valor or novo_valor == "__SEPARATOR__":
+        return dash.no_update, dash.no_update, dash.no_update
+
+    papel_atual = (papel_atual_data or {}).get("role", "paciente")
+
+    # Atalho medico
+    if novo_valor == "__MEDICO_SHORTCUT__":
+        return dash.no_update, {"role": "medico"}, "/medico/caseload"
+
+    # Voltar pra paciente (estando como medico)
+    if papel_atual == "medico":
+        return {"id": novo_valor}, {"role": "paciente"}, "/prontuario"
+
+    # Paciente trocando entre pacientes (Fase 2B preservada)
+    return {"id": novo_valor}, dash.no_update, "/prontuario"
+
+
+# Logout (fase 6): limpa papel-ativo + perfil-ativo + dropdown e vai /login.
+# Botao 'SAIR' no topbar dispara este callback.
+@app.callback(
+    Output("perfil-ativo", "data", allow_duplicate=True),
+    Output("papel-ativo", "data", allow_duplicate=True),
+    Output("hud-url", "pathname", allow_duplicate=True),
+    Output("topbar-perfil-dropdown", "value", allow_duplicate=True),
+    Input("topbar-logout-btn", "n_clicks"),
+    prevent_initial_call=True,
+)
+def _logout(n_clicks):
+    if not n_clicks:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+    # papel=None faz o guard redirecionar todas as tentativas pra /login.
+    return None, None, "/login", None
 
 
 # Callback _sync_dropdown_to_url REMOVIDO (fase 2c): sincronizava dropdown
@@ -270,20 +357,39 @@ def _trocar_perfil_ativo(perfil_id):
 # rehidratação agora usa Input("beneficiario-select","value") em chat.py.
 
 
-# Guard de papel (app médico, fase 1): paciente tentando rota /medico/* é
-# redirecionado pro /login. allow_duplicate=True porque hud-url.pathname já
-# tem escritores (_trocar_perfil_ativo + login). prevent_initial_call=True
-# pra não disparar na carga inicial.
+# Guard de autenticacao estrito (fase 6, substitui _guard_papel da fase 1):
+# qualquer rota acessada sem papel-ativo valido redireciona pro /login.
+# /login sempre acessivel (sem loop). prevent_initial_call=True garante que
+# nao dispare na carga do app — mas o callback dispara apos qualquer
+# atualizacao de hud-url.pathname (incluindo navegacao client-side via
+# dcc.Link), e ai checa papel.
+#
+# IMPORTANTE: papel-ativo e STATE (nao Input) — se fosse Input, o callback
+# rodaria quando ele mesmo escreve indiretamente (via outros callbacks que
+# tocam papel-ativo), gerando loop. Como State, so a navegacao dispara.
 @app.callback(
     Output("hud-url", "pathname", allow_duplicate=True),
     Input("hud-url", "pathname"),
     State("papel-ativo", "data"),
     prevent_initial_call=True,
 )
-def _guard_papel(pathname, papel):
-    role = (papel or {}).get("role", "paciente")
-    if pathname and pathname.startswith("/medico/") and role != "medico":
+def _guard_autenticacao(pathname, papel_data):
+    if not pathname:
+        return dash.no_update
+
+    # /login sempre acessivel (evita loop quando o proprio guard manda pra la)
+    if pathname == "/login":
+        return dash.no_update
+
+    # Sem papel valido -> redireciona pro login
+    papel = (papel_data or {}).get("role")
+    if papel not in ("paciente", "medico"):
         return "/login"
+
+    # Paciente tentando rota /medico/* -> login (mantem proteção da fase 1)
+    if pathname.startswith("/medico/") and papel != "medico":
+        return "/login"
+
     return dash.no_update
 
 
