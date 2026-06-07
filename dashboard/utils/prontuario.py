@@ -833,32 +833,260 @@ def _bloco_anotacoes(paciente: dict) -> html.Div:
     )
 
 
+def _card_rascunho_pendente(r: dict) -> html.Div:
+    """Card de rascunho pendente: tag inviolável + 3 botões + textarea oculto.
+
+    A textarea começa com display:none — só fica visível quando o callback
+    _toggle_edit_rascunho clica em "Editar". O botão Aprovar lê o valor da
+    textarea SE estiver visível, marcando como 'editado' nesse caso.
+
+    IDs pattern-matching:
+      {"type": "rascunho-aprovar"  | "rid": ..., "pid": ...}
+      {"type": "rascunho-editar"   | "rid": ..., "pid": ...}
+      {"type": "rascunho-rejeitar" | "rid": ..., "pid": ...}
+      {"type": "rascunho-edit-input" | "rid": ...}
+    """
+    rid = r["id"]
+    pid = r["paciente_id"]
+
+    return html.Div(
+        style={
+            "padding": "16px",
+            "background": "rgba(242, 183, 5, 0.08)",  # WARNING bg suave
+            "border": f"1px solid {WARNING}",
+            "borderLeft": f"4px solid {WARNING}",
+            "borderRadius": "6px",
+            "marginBottom": "14px",
+        },
+        children=[
+            # Tag inviolável visível em chip amarelo de alerta
+            html.Div([
+                html.Span(
+                    r.get("tag_inviolavel",
+                          "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]"),
+                    style={
+                        "fontFamily": "JetBrains Mono, Consolas, monospace",
+                        "fontSize": "0.7rem", "background": WARNING,
+                        "color": "#000", "padding": "2px 8px",
+                        "borderRadius": "3px", "fontWeight": "700",
+                        "letterSpacing": "0.04em",
+                    },
+                ),
+                html.Span(
+                    f"  ·  Gerado em {r.get('data_geracao', '—')}",
+                    style={"color": TEXT_MUTED, "fontSize": "0.75rem",
+                           "marginLeft": "8px",
+                           "fontFamily": "JetBrains Mono, Consolas, monospace"},
+                ),
+            ], style={"marginBottom": "12px"}),
+
+            # Medicamento (destaque)
+            html.Div([
+                html.Span("Medicamento: ", style={
+                    "color": TEXT_MUTED, "fontSize": "0.7rem",
+                    "fontWeight": "700", "letterSpacing": "0.06em",
+                    "textTransform": "uppercase",
+                    "fontFamily": "JetBrains Mono, Consolas, monospace",
+                }),
+                html.Span(r.get("medicamento", "—"), style={
+                    "color": TEXT_DARK, "fontWeight": "700",
+                    "fontSize": "0.92rem",
+                }),
+            ], style={"marginBottom": "6px"}),
+
+            # Alteração proposta
+            html.Div([
+                html.Span("Alteração proposta: ", style={
+                    "color": TEXT_MUTED, "fontSize": "0.7rem",
+                    "fontWeight": "700", "letterSpacing": "0.06em",
+                    "textTransform": "uppercase",
+                    "fontFamily": "JetBrains Mono, Consolas, monospace",
+                }),
+                html.Span(r.get("alteracao", "—"), style={
+                    "color": TEXT_DARK, "fontSize": "0.86rem",
+                }),
+            ], style={"marginBottom": "12px"}),
+
+            # Justificativa IA (em box destacada)
+            html.Div([
+                html.Div("JUSTIFICATIVA DA IA", style={
+                    "color": TEXT_MUTED, "fontSize": "0.7rem",
+                    "fontWeight": "700", "letterSpacing": "0.06em",
+                    "marginBottom": "4px",
+                    "fontFamily": "JetBrains Mono, Consolas, monospace",
+                }),
+                html.P(r.get("justificativa_ia", "—"), style={
+                    "color": TEXT_DARK, "margin": 0,
+                    "fontSize": "0.84rem", "lineHeight": "1.5",
+                }),
+            ], style={
+                "background": "rgba(255,255,255,0.55)",
+                "padding": "10px 12px",
+                "borderRadius": "4px",
+                "marginBottom": "12px",
+            }),
+
+            # Textarea editável (oculto até clicar Editar)
+            dcc.Textarea(
+                id={"type": "rascunho-edit-input", "rid": rid},
+                value=r.get("alteracao", ""),
+                style={
+                    "width": "100%", "minHeight": "60px",
+                    "padding": "8px", "marginBottom": "10px",
+                    "border": f"1px solid {BORDER}", "borderRadius": "4px",
+                    "fontFamily": "inherit", "fontSize": "0.86rem",
+                    "resize": "vertical",
+                    "display": "none",  # toggled por _toggle_edit_rascunho
+                },
+            ),
+
+            # 3 botões: Aprovar / Editar / Rejeitar
+            html.Div([
+                html.Button("✓ Aprovar",
+                            id={"type": "rascunho-aprovar", "rid": rid, "pid": pid},
+                            n_clicks=0,
+                            className="hud-btn",
+                            style={"marginRight": "8px",
+                                   "background": SUCCESS, "borderColor": SUCCESS}),
+                html.Button("✎ Editar",
+                            id={"type": "rascunho-editar", "rid": rid, "pid": pid},
+                            n_clicks=0,
+                            className="hud-btn hud-btn--ghost",
+                            style={"marginRight": "8px"}),
+                html.Button("✗ Rejeitar",
+                            id={"type": "rascunho-rejeitar", "rid": rid, "pid": pid},
+                            n_clicks=0,
+                            className="hud-btn",
+                            style={"background": DANGER, "borderColor": DANGER}),
+            ]),
+        ],
+    )
+
+
+def _card_rascunho_decidido(r: dict) -> html.Div:
+    """Card de rascunho já decidido — cor atenuada, mostra decisão completa
+    (auditoria sempre visível)."""
+    status = r.get("status", "—")
+    decisao = r.get("decisao") or {}
+
+    cor_status = {
+        "aprovado": SUCCESS,
+        "editado": SUCCESS,
+        "rejeitado": DANGER,
+    }.get(status, TEXT_MUTED)
+
+    label_status = {
+        "aprovado": "✓ APROVADO",
+        "editado": "✓ APROVADO (editado)",
+        "rejeitado": "✗ REJEITADO",
+    }.get(status, status.upper())
+
+    texto_final = r.get("texto_aprovado") or r.get("alteracao", "—")
+
+    return html.Div(
+        style={
+            "padding": "10px 12px",
+            "background": "rgba(0,0,0,0.02)",
+            "borderLeft": f"3px solid {cor_status}",
+            "borderRadius": "4px",
+            "marginBottom": "8px",
+            "opacity": "0.75",
+        },
+        children=[
+            html.Div([
+                html.Span(label_status, style={
+                    "color": cor_status, "fontWeight": "700",
+                    "fontSize": "0.78rem", "letterSpacing": "0.04em",
+                    "fontFamily": "JetBrains Mono, Consolas, monospace",
+                }),
+                html.Span(
+                    f"  ·  {decisao.get('data', '—')} por {decisao.get('medico', '—')}",
+                    style={"color": TEXT_MUTED, "fontSize": "0.74rem",
+                           "fontFamily": "JetBrains Mono, Consolas, monospace"},
+                ),
+            ], style={"marginBottom": "4px"}),
+            html.Div(f"{r.get('medicamento', '?')}: {texto_final}", style={
+                "color": TEXT_DARK, "fontSize": "0.82rem",
+            }),
+        ],
+    )
+
+
 def _bloco_aprovacao_rascunho(paciente: dict) -> html.Div:
-    """Aprovação de rascunho — só médico. Fase 2A.2: aviso 'em construção'.
-    Geração de rascunho (tool) + aprovar/rejeitar/editar: Fase 4."""
+    """Aprovação de rascunho de prescrição — só médico (fase 4B).
+
+    Pendentes em cima (destaque amarelo + tag inviolável) + histórico
+    abaixo (cor atenuada, auditoria sempre visível). Estados:
+      pendente -> aprovado | editado | rejeitado
+
+    Princípio-guia: 'a IA propõe, o médico decide'. Tag inviolável visível
+    em cada card pendente reforça o caráter de RASCUNHO.
+    """
+    from utils.rascunhos_runtime import listar_pendentes, listar_decididos
+
+    pid = paciente.get("id", "")
+    pendentes = listar_pendentes(pid)
+    decididos = listar_decididos(pid)
+
+    # ── Bloco de pendentes ────────────────────────────────────────────────
+    if pendentes:
+        bloco_pendentes = html.Div([
+            _card_rascunho_pendente(r) for r in pendentes
+        ])
+    else:
+        bloco_pendentes = html.Div([
+            html.P(
+                "Nenhum rascunho pendente.",
+                style={"color": TEXT_MUTED, "fontStyle": "italic",
+                       "margin": "8px 0 4px 0", "fontWeight": "600"},
+            ),
+            html.P(
+                "O sistema só gera rascunhos quando há indicação clínica "
+                "baseada no perfil do paciente. Pacientes estáveis ou em "
+                "acompanhamento preventivo podem não ter sugestões pendentes.",
+                style={"color": TEXT_MUTED, "fontSize": "0.82rem",
+                       "fontStyle": "italic", "margin": 0,
+                       "lineHeight": "1.5"},
+            ),
+        ])
+
+    # ── Bloco de histórico (auditoria) ────────────────────────────────────
+    bloco_historico = None
+    if decididos:
+        bloco_historico = html.Div([
+            html.Div("HISTÓRICO DE DECISÕES", style={
+                "color": TEXT_MUTED, "fontSize": "0.74rem",
+                "fontWeight": "700", "letterSpacing": "0.08em",
+                "marginTop": "20px", "marginBottom": "8px",
+                "fontFamily": "JetBrains Mono, Consolas, monospace",
+                "borderTop": f"1px dashed {BORDER}",
+                "paddingTop": "14px",
+            }),
+            html.Div([_card_rascunho_decidido(r) for r in decididos]),
+        ])
+
+    children = [
+        # Aviso de princípio (chip de regra inviolável)
+        html.Div([
+            html.Strong("Princípio-guia: ", style={"color": WARNING}),
+            "a IA propõe rascunhos, o médico decide. Aprovar / Editar / Rejeitar.",
+        ], style={
+            "padding": "10px 14px", "marginBottom": "14px",
+            "backgroundColor": "rgba(242,183,5,0.10)",
+            "borderLeft": f"3px solid {WARNING}",
+            "fontSize": "0.82rem", "color": "#7A5B00",
+        }),
+        bloco_pendentes,
+    ]
+    if bloco_historico is not None:
+        children.append(bloco_historico)
+
     return hud_panel(
         title="Aprovação de Rascunho de Prescrição",
-        status="AGUARDANDO IMPLEMENTAÇÃO",
+        status=(f"{len(pendentes)} pendente(s) · visível só ao médico"
+                if pendentes else "visível só ao médico"),
         accent=WARNING,
-        children=html.Div([
-            html.Div([
-                html.Strong("Princípio-guia: ",
-                            style={"color": WARNING}),
-                "a IA propõe rascunho, o médico decide. Aprovar/rejeitar/editar.",
-            ], style={
-                "padding": "10px 14px", "marginBottom": "10px",
-                "backgroundColor": "rgba(242,183,5,0.10)",
-                "borderLeft": f"3px solid {WARNING}",
-                "fontSize": "0.8rem", "color": "#7A5B00",
-            }),
-            html.P(
-                "Em construção — implementação na Fase 4 do app médico. "
-                "Vai integrar com a tool sugerir_rascunho_prescricao (já existe) "
-                "e persistir aprovações via update_patient.",
-                style={"margin": 0, "color": TEXT_MUTED,
-                       "fontStyle": "italic", "fontSize": "0.82rem"},
-            ),
-        ]),
+        children=html.Div(children),
     )
 
 

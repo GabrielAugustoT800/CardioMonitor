@@ -15,12 +15,13 @@ from __future__ import annotations
 
 import dash
 from dash import (
-    html, callback, Input, Output, State, ALL, ctx, no_update,
+    html, callback, Input, Output, State, ALL, MATCH, ctx, no_update,
 )
 
 # Convenção do projeto: dashboard/ no sys.path -> "from utils.X"
 from utils.prontuario import render_prontuario
 from utils.anotacoes_runtime import salvar_anotacao
+from utils.rascunhos_runtime import aprovar, rejeitar
 
 
 dash.register_page(
@@ -48,9 +49,11 @@ def layout(**kwargs):
     # render_prontuario, que monta _bloco_anotacoes que le o arquivo runtime
     # via todas_anotacoes(). Ciclo se fecha automaticamente.
     Input("anotacoes-refresh", "data"),
+    # Trigger de re-render apos decisao de rascunho (fase 4B). Mesmo padrao.
+    Input("rascunhos-refresh", "data"),
     prevent_initial_call=False,
 )
-def _renderizar_prontuario(perfil_data, papel_data, _refresh):
+def _renderizar_prontuario(perfil_data, papel_data, _refresh_anot, _refresh_rasc):
     """Renderiza o prontuário do paciente ativo, parametrizado por papel.
 
     perfil_data tem estrutura {"id": "<PID>"} (Store global em app.py).
@@ -165,3 +168,105 @@ def _salvar_anotacao(n_clicks_list, valores, refresh_atual):
     # Incrementa o refresh trigger pra disparar _renderizar_prontuario
     novo_refresh = (refresh_atual or 0) + 1
     return novo_refresh, limpar, feedback
+
+
+# =============================================================================
+# Fase 4B — Aprovação de rascunho de prescrição
+# =============================================================================
+# IDs do bloco de aprovação em utils/prontuario.py:_card_rascunho_pendente:
+#   {"type": "rascunho-aprovar",    "rid": ..., "pid": ...}  (botao)
+#   {"type": "rascunho-editar",     "rid": ..., "pid": ...}  (botao toggle)
+#   {"type": "rascunho-rejeitar",   "rid": ..., "pid": ...}  (botao)
+#   {"type": "rascunho-edit-input", "rid": ...}              (textarea oculta)
+#
+# Princípio: o botão "Aprovar" é ÚNICO — se a textarea daquele rid estiver
+# visível (display=block), o callback lê o valor e marca como 'editado'.
+# Senão, aprova com o texto original (status='aprovado'). Isso evita ter
+# 2 callbacks com Output duplicado em rascunhos-refresh.
+
+
+@callback(
+    Output("rascunhos-refresh", "data", allow_duplicate=True),
+    Input({"type": "rascunho-aprovar", "rid": ALL, "pid": ALL}, "n_clicks"),
+    State({"type": "rascunho-edit-input", "rid": ALL}, "value"),
+    State({"type": "rascunho-edit-input", "rid": ALL}, "style"),
+    State({"type": "rascunho-edit-input", "rid": ALL}, "id"),
+    State("rascunhos-refresh", "data"),
+    prevent_initial_call=True,
+)
+def _aprovar_rascunho(n_clicks_list, valores, estilos, ids_input, refresh_atual):
+    """Aprova um rascunho. Se a textarea daquele rid estiver visível
+    (display=block), aprova como 'editado' com o texto atual. Senão, aprova
+    direto (status='aprovado')."""
+    if not n_clicks_list or not any(n for n in n_clicks_list if n):
+        return no_update
+
+    triggered = ctx.triggered_id
+    if not isinstance(triggered, dict):
+        return no_update
+
+    rid = triggered.get("rid")
+    pid = triggered.get("pid")
+    if not rid or not pid:
+        return no_update
+
+    # Procurar o input/textarea daquele rid. Se display=block, pegar valor.
+    texto_editado = None
+    for i, id_dict in enumerate(ids_input or []):
+        if not isinstance(id_dict, dict) or id_dict.get("rid") != rid:
+            continue
+        estilo = estilos[i] if i < len(estilos) else {}
+        if isinstance(estilo, dict) and estilo.get("display") == "block":
+            valor = valores[i] if i < len(valores) else None
+            if valor and str(valor).strip():
+                texto_editado = str(valor).strip()
+        break
+
+    aprovar(pid, rid, texto_editado=texto_editado)
+    return (refresh_atual or 0) + 1
+
+
+@callback(
+    Output("rascunhos-refresh", "data", allow_duplicate=True),
+    Input({"type": "rascunho-rejeitar", "rid": ALL, "pid": ALL}, "n_clicks"),
+    State("rascunhos-refresh", "data"),
+    prevent_initial_call=True,
+)
+def _rejeitar_rascunho(n_clicks_list, refresh_atual):
+    """Rejeita um rascunho. Registra decisão (médico + data)."""
+    if not n_clicks_list or not any(n for n in n_clicks_list if n):
+        return no_update
+
+    triggered = ctx.triggered_id
+    if not isinstance(triggered, dict):
+        return no_update
+
+    rid = triggered.get("rid")
+    pid = triggered.get("pid")
+    if not rid or not pid:
+        return no_update
+
+    rejeitar(pid, rid)
+    return (refresh_atual or 0) + 1
+
+
+@callback(
+    Output({"type": "rascunho-edit-input", "rid": MATCH}, "style"),
+    Input({"type": "rascunho-editar", "rid": MATCH, "pid": ALL}, "n_clicks"),
+    State({"type": "rascunho-edit-input", "rid": MATCH}, "style"),
+    prevent_initial_call=True,
+)
+def _toggle_edit_rascunho(n_clicks_list, style_atual):
+    """Mostra/esconde a textarea de edição do rascunho.
+
+    Aceita lista vazia ou todos n_clicks=0 (carga inicial) como no-op.
+    Combinação MATCH(rid) + ALL(pid): MATCH faz o callback rodar por rid;
+    ALL no pid casa com qualquer pid daquele rid (na prática só tem 1).
+    """
+    if not n_clicks_list or not any(n for n in n_clicks_list if n):
+        return no_update
+
+    novo_estilo = dict(style_atual or {})
+    atual = novo_estilo.get("display")
+    novo_estilo["display"] = "block" if atual == "none" else "none"
+    return novo_estilo

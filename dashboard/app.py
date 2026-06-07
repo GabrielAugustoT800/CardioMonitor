@@ -146,6 +146,9 @@ app.layout = html.Div(className="app-shell", children=[
     # storage_type='memory' — so serve pra disparar callback no mesmo turno;
     # nao precisa persistir entre reloads (o arquivo runtime ja persiste).
     dcc.Store(id="anotacoes-refresh", storage_type="memory", data=0),
+    # Trigger pra re-render apos aprovar/editar/rejeitar rascunho (fase 4b).
+    # Mesmo padrao: memory, contador incrementado pelo callback de decisao.
+    dcc.Store(id="rascunhos-refresh", storage_type="memory", data=0),
     # Stores meu-perfil-refresh e meu-perfil-reload-dummy REMOVIDOS (fase 2c):
     # workaround do J.1.b pra reload do formulario de criacao de /meu-perfil.
     # /meu-perfil foi deletado, callbacks orfaos cairam com ele.
