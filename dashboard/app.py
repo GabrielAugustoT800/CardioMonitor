@@ -178,11 +178,28 @@ def _tick(_n):
     Output("hud-nav", "children"),
     Input("hud-url", "pathname"),
     Input("papel-ativo", "data"),
+    # Re-renderiza nav quando rascunho e decidido (fase 4b) — badge da rota
+    # /medico/alertas atualiza. Outros gatilhos (paciente fica vermelho,
+    # pico aparece) requerem recarregar a pagina; nao automatizamos isso pra
+    # nao recalcular alertas a cada Interval de relogio.
+    Input("rascunhos-refresh", "data"),
 )
-def _nav_active(pathname, papel):
+def _nav_active(pathname, papel, _rascunhos_refresh):
     role_atual = (papel or {}).get("role", "paciente")
     ordered = sorted(dash.page_registry.values(),
                      key=lambda p: p.get("order", 99))
+
+    # Conta alertas SO no nav medico (evita import + I/O desnecessario no nav
+    # do paciente).
+    total = 0
+    if role_atual == "medico":
+        try:
+            from utils.alertas import total_alertas
+            total = total_alertas()
+        except Exception:
+            # Degrada gracioso — sem badge se import/IO falhar
+            total = 0
+
     links = []
     for p in ordered:
         # role metadata: ausência = paciente; 'oculto' nunca no nav (/login).
@@ -192,8 +209,27 @@ def _nav_active(pathname, papel):
         href = p["relative_path"]
         is_active = (pathname or "/") == href
         css_class = "hud-nav-link active" if is_active else "hud-nav-link"
+
+        # Badge na rota /medico/alertas (so quando ha alertas pendentes).
+        if (role_atual == "medico"
+                and href == "/medico/alertas"
+                and total > 0):
+            children_link = [
+                p["name"].upper(),
+                html.Span(str(total), style={
+                    "background": "#E53E3E", "color": "#fff",
+                    "borderRadius": "10px",
+                    "padding": "1px 7px", "fontSize": "0.7rem",
+                    "fontWeight": "700",
+                    "marginLeft": "6px",
+                    "fontFamily": "JetBrains Mono, Consolas, monospace",
+                }),
+            ]
+        else:
+            children_link = p["name"].upper()
+
         links.append(dcc.Link(
-            p["name"].upper(),
+            children_link,
             href=href,
             className=css_class,
             refresh=False,

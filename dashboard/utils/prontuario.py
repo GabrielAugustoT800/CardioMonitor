@@ -1145,21 +1145,33 @@ def render_prontuario(paciente_id: str, papel: str = "paciente") -> html.Div:
         _bloco_consultas(paciente, accent),
         _bloco_exames(paciente, accent),
     ])
+    # Envolvemos a telemetria num Div com id="bloco-telemetria" pra suportar
+    # scroll automatico via hash URL (fase 5 — fila de alertas linka pra ca).
     if df is not None and not df.empty:
-        blocos.extend(_blocos_telemetria(df, accent))
+        blocos.append(html.Div(
+            _blocos_telemetria(df, accent),
+            id="bloco-telemetria",
+        ))
     else:
-        blocos.append(hud_panel(
-            title="Telemetria PPG",
-            status="SEM DADOS",
-            children=html.P(
-                "Sem CSV de telemetria disponível pra este paciente.",
-                style={"margin": 0, "color": TEXT_MUTED,
-                       "fontStyle": "italic"},
+        blocos.append(html.Div(
+            hud_panel(
+                title="Telemetria PPG",
+                status="SEM DADOS",
+                children=html.P(
+                    "Sem CSV de telemetria disponível pra este paciente.",
+                    style={"margin": 0, "color": TEXT_MUTED,
+                           "fontStyle": "italic"},
+                ),
             ),
+            id="bloco-telemetria",
         ))
 
     if papel == "medico":
         blocos.append(_bloco_anotacoes(paciente))
-        blocos.append(_bloco_aprovacao_rascunho(paciente))
+        # id no wrapper pra suportar scroll por hash URL (fase 5).
+        blocos.append(html.Div(
+            _bloco_aprovacao_rascunho(paciente),
+            id="bloco-aprovacao-rascunho",
+        ))
 
     return html.Div(blocos, className="hud-page")

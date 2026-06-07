@@ -89,6 +89,41 @@ def calcular_semaforo(paciente: dict, df: pd.DataFrame | None) -> tuple[str, str
     return cor, justif
 
 
+def detectar_pico_telemetria(
+    df: pd.DataFrame | None,
+    janela: int = 10,
+    threshold_pct: float = 50.0,
+) -> tuple[bool, str]:
+    """Detecta deterioração súbita: % irregular nas últimas N leituras >= threshold.
+
+    Complementa calcular_semaforo (que olha janela 50, visão global). Esta
+    janela curta pega picos recentes mesmo num paciente verde/amarelo global.
+    Usada pela fila de alertas (fase 5).
+
+    Args:
+        df: DataFrame com coluna 'status' ('regular'/'irregular'/'atencao').
+        janela: número de leituras a olhar (default 10 — janela curta).
+        threshold_pct: % mínima de irregular pra disparar pico (default 50.0).
+
+    Returns:
+        (tem_pico: bool, justificativa: str). Justificativa vazia quando
+        não há pico. Retorna (False, "") em qualquer caso degenerado
+        (df None/vazio/sem coluna status/menos de `janela` leituras).
+    """
+    if df is None or df.empty or "status" not in df.columns:
+        return False, ""
+    ult = df.tail(janela)
+    n = len(ult)
+    if n < janela:
+        # Sem amostragem suficiente — não dispara pico
+        return False, ""
+    irreg = int((ult["status"] == "irregular").sum())
+    pct = (irreg / n * 100) if n else 0.0
+    if pct >= threshold_pct:
+        return True, f"pico recente: {pct:.0f}% irregular nas últimas {n} leituras"
+    return False, ""
+
+
 def semaforo_chip(cor: str, justificativa: str = "") -> html.Span:
     """Chip visual do semáforo (reusa CSS .hud-chip).
 
