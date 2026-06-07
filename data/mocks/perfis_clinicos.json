@@ -29,21 +29,33 @@
           "dose": "5 mg",
           "frequencia": "2x/dia",
           "indicacao": "Anticoagulação (FA)",
-          "inicio": "2023-08"
+          "inicio": "2023-08",
+          "classe": "Anticoagulante oral direto (DOAC) — inibidor do fator Xa",
+          "posologia": "1 comprimido pela manhã e 1 à noite, com ou sem alimentos",
+          "meta_terapeutica": "Prevenção de AVC isquêmico em FA não-valvar",
+          "observacao": "Não suspender sem orientação médica. Risco de eventos tromboembólicos."
         },
         {
           "nome": "Metoprolol",
           "dose": "50 mg",
           "frequencia": "1x/dia",
           "indicacao": "Controle de frequência",
-          "inicio": "2023-09"
+          "inicio": "2023-09",
+          "classe": "Beta-bloqueador cardiosseletivo (B1)",
+          "posologia": "1 comprimido pela manhã, com alimentos",
+          "meta_terapeutica": "Controle da resposta ventricular em FA. FC-alvo em repouso: 60–80 bpm",
+          "observacao": "Não suspender abruptamente — risco de taquicardia rebote."
         },
         {
           "nome": "Losartana",
           "dose": "50 mg",
           "frequencia": "1x/dia",
           "indicacao": "Hipertensão",
-          "inicio": "2021-02"
+          "inicio": "2021-02",
+          "classe": "Antagonista do receptor de angiotensina II (BRA)",
+          "posologia": "1 comprimido ao dia, em horário fixo",
+          "meta_terapeutica": "Controle pressórico. PA-alvo < 140/90 mmHg (< 130/80 em diabéticos)",
+          "observacao": "Monitorar função renal e potássio sérico periodicamente."
         }
       ],
       "alergias": [
@@ -74,7 +86,37 @@
           "data": "2026-07-10",
           "especialidade": "Cardiologia",
           "status": "agendada"
-        }
+        },
+        "historico": [
+          {
+            "data": "2026-05-10",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Episódios paroxísticos persistem. Ajustada anticoagulação.",
+            "status": "realizada"
+          },
+          {
+            "data": "2026-02-15",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Avaliação de rotina. Holter de 24h sem novos achados.",
+            "status": "realizada"
+          },
+          {
+            "data": "2025-11-08",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Aumento de dose de Metoprolol por palpitações aos esforços.",
+            "status": "realizada"
+          },
+          {
+            "data": "2025-08-20",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Aniversario de 2 anos de FA. Eco com FE preservada.",
+            "status": "realizada"
+          }
+        ]
       },
       "exames_recentes": [
         {
@@ -96,7 +138,13 @@
           "medico": "Dr. Robert Chase",
           "texto": "Paciente relatou aderência regular à Apixabana. Refere palpitações ocasionais aos esforços. Manter conduta e reavaliar em 2 meses."
         }
-      ]
+      ],
+      "resumo_clinico": "Paciente de 38 anos com fibrilação atrial paroxística diagnosticada em agosto/2023, em uso de Apixabana e Metoprolol. Apresenta hipertensão arterial controlada com Losartana. Telemetria recente mostra ~22% de batimentos irregulares nas últimas leituras, com episódios sintomáticos ocasionais aos esforços. Refere boa aderência à anticoagulação. Conduta: manter esquema atual, reavaliar resposta ventricular em 2 meses.",
+      "medico_responsavel": {
+        "nome": "Dr. Robert Chase",
+        "crm": "SP-178432",
+        "especialidade": "Cardiologia"
+      }
     },
     {
       "id": "LUCAS",
@@ -131,7 +179,23 @@
           "data": "2026-11-15",
           "especialidade": "Cardiologia",
           "status": "agendada"
-        }
+        },
+        "historico": [
+          {
+            "data": "2026-05-15",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Check-up de rotina. Paciente assintomático, exame normal.",
+            "status": "realizada"
+          },
+          {
+            "data": "2025-11-20",
+            "tipo": "Clínica geral",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Avaliação anual. ECG normal, sem fatores de risco.",
+            "status": "realizada"
+          }
+        ]
       },
       "exames_recentes": [
         {
@@ -147,7 +211,13 @@
           "medico": "Dr. Robert Chase",
           "texto": "Paciente jovem, sem fatores de risco relevantes. Orientado sobre hábitos saudáveis. Acompanhamento anual."
         }
-      ]
+      ],
+      "resumo_clinico": "Paciente de 33 anos sem comorbidades conhecidas, em acompanhamento preventivo. ECG de rotina dentro da normalidade. Telemetria recente sem alterações. Sinais vitais e antropometria normais. Sem fatores de risco cardiovascular relevantes. Conduta: manter hábitos saudáveis, reavaliação anual.",
+      "medico_responsavel": {
+        "nome": "Dr. Robert Chase",
+        "crm": "SP-178432",
+        "especialidade": "Cardiologia"
+      }
     },
     {
       "id": "MARIA",
@@ -178,21 +248,33 @@
           "dose": "5 mg",
           "frequencia": "1x/dia",
           "indicacao": "Anticoagulação (FA)",
-          "inicio": "2019-11"
+          "inicio": "2019-11",
+          "classe": "Anticoagulante oral — antagonista da vitamina K",
+          "posologia": "1 comprimido ao dia, sempre no mesmo horário. Manter dieta consistente em vitamina K.",
+          "meta_terapeutica": "Prevenção de AVC em FA. INR-alvo 2.0–3.0",
+          "observacao": "Controle de INR a cada 4–6 semanas. Atenção a interações alimentares e medicamentosas."
         },
         {
           "nome": "Atenolol",
           "dose": "50 mg",
           "frequencia": "1x/dia",
           "indicacao": "Controle de frequência",
-          "inicio": "2019-12"
+          "inicio": "2019-12",
+          "classe": "Beta-bloqueador cardiosseletivo (B1)",
+          "posologia": "1 comprimido pela manhã",
+          "meta_terapeutica": "Controle de frequência ventricular em FA. FC-alvo 60–80 bpm em repouso",
+          "observacao": "Monitorar pressão arterial e frequência cardíaca. Evitar suspensão abrupta."
         },
         {
           "nome": "Hidroclorotiazida",
           "dose": "25 mg",
           "frequencia": "1x/dia",
           "indicacao": "Hipertensão",
-          "inicio": "2010-05"
+          "inicio": "2010-05",
+          "classe": "Diurético tiazídico",
+          "posologia": "1 comprimido pela manhã, com café da manhã",
+          "meta_terapeutica": "Controle pressórico em hipertensão leve a moderada",
+          "observacao": "Monitorar potássio, sódio e ácido úrico. Pode causar diurese aumentada."
         }
       ],
       "alergias": [],
@@ -217,7 +299,37 @@
           "data": "2026-08-08",
           "especialidade": "Cardiologia",
           "status": "agendada"
-        }
+        },
+        "historico": [
+          {
+            "data": "2026-05-08",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "FA estável e bem controlada. INR na faixa terapêutica.",
+            "status": "realizada"
+          },
+          {
+            "data": "2026-02-10",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Controle trimestral. INR=2.5. ECG: FA com FC média 70.",
+            "status": "realizada"
+          },
+          {
+            "data": "2025-11-12",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Avaliação de rotina. Sem episódios sintomáticos.",
+            "status": "realizada"
+          },
+          {
+            "data": "2025-08-15",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Renovação de prescrição. PA controlada (128/78).",
+            "status": "realizada"
+          }
+        ]
       },
       "exames_recentes": [
         {
@@ -239,7 +351,13 @@
           "medico": "Dr. Robert Chase",
           "texto": "Paciente idosa com FA de longa data, bem controlada. Relatou tomar Varfarina regularmente e comparecer aos controles de INR. Sem episódios sintomáticos. Manter conduta."
         }
-      ]
+      ],
+      "resumo_clinico": "Paciente de 67 anos com fibrilação atrial de longa data (desde 2019), bem controlada com Varfarina e Atenolol. Hipertensão arterial controlada com Hidroclorotiazida. INR na faixa terapêutica nos últimos controles. Telemetria com 12% de batimentos irregulares (compatível com FA controlada). Sem episódios sintomáticos recentes. Conduta: manter esquema, controle de INR a cada 4 semanas.",
+      "medico_responsavel": {
+        "nome": "Dr. Robert Chase",
+        "crm": "SP-178432",
+        "especialidade": "Cardiologia"
+      }
     },
     {
       "id": "HELENA",
@@ -276,28 +394,44 @@
           "dose": "100 mg",
           "frequencia": "1x/dia",
           "indicacao": "Antiagregação (pós-IAM)",
-          "inicio": "2026-03"
+          "inicio": "2026-03",
+          "classe": "Antiagregante plaquetário (inibidor de COX-1)",
+          "posologia": "1 comprimido ao dia, após o almoço (reduz desconforto gástrico)",
+          "meta_terapeutica": "Prevenção secundária pós-IAM",
+          "observacao": "Uso contínuo. Atenção a sinais de sangramento (fezes escuras, equimoses)."
         },
         {
           "nome": "Atorvastatina",
           "dose": "40 mg",
           "frequencia": "1x/dia",
           "indicacao": "Dislipidemia",
-          "inicio": "2026-03"
+          "inicio": "2026-03",
+          "classe": "Estatina (inibidor da HMG-CoA redutase)",
+          "posologia": "1 comprimido à noite, antes de dormir",
+          "meta_terapeutica": "LDL-alvo < 70 mg/dL em alto risco cardiovascular (pós-IAM)",
+          "observacao": "Dosar perfil lipídico em 6–8 semanas. Reportar dor muscular persistente."
         },
         {
           "nome": "Enalapril",
           "dose": "10 mg",
           "frequencia": "2x/dia",
           "indicacao": "Pós-IAM / HAS",
-          "inicio": "2026-03"
+          "inicio": "2026-03",
+          "classe": "Inibidor da enzima conversora de angiotensina (IECA)",
+          "posologia": "1 comprimido de manhã e 1 à noite",
+          "meta_terapeutica": "Remodelamento ventricular pós-IAM + controle pressórico",
+          "observacao": "Tosse seca persistente pode indicar intolerância — reportar ao médico."
         },
         {
           "nome": "Bisoprolol",
           "dose": "5 mg",
           "frequencia": "1x/dia",
           "indicacao": "Beta-bloqueio pós-IAM",
-          "inicio": "2026-03"
+          "inicio": "2026-03",
+          "classe": "Beta-bloqueador cardiosseletivo (B1) de alta seletividade",
+          "posologia": "1 comprimido pela manhã",
+          "meta_terapeutica": "Beta-bloqueio pós-IAM — redução de mortalidade e arritmias",
+          "observacao": "Não suspender abruptamente. Monitorar FC e PA."
         }
       ],
       "alergias": [
@@ -328,7 +462,30 @@
           "data": "2026-06-20",
           "especialidade": "Cardiologia",
           "status": "agendada"
-        }
+        },
+        "historico": [
+          {
+            "data": "2026-05-20",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Pós-IAM recente. Telemetria com irregularidades. Vigilância estreita.",
+            "status": "realizada"
+          },
+          {
+            "data": "2026-04-15",
+            "tipo": "Cardiologia",
+            "medico": "Dr. Robert Chase",
+            "resumo": "1ª consulta pós-alta hospitalar. Stent em DA, FE 50%.",
+            "status": "realizada"
+          },
+          {
+            "data": "2026-03-12",
+            "tipo": "Cardiologia (urgência)",
+            "medico": "Dr. Robert Chase",
+            "resumo": "IAM com supradesnivel. Cateterismo: stent em DA. Sucesso angiográfico.",
+            "status": "realizada"
+          }
+        ]
       },
       "exames_recentes": [
         {
@@ -350,7 +507,13 @@
           "medico": "Dr. Robert Chase",
           "texto": "Paciente em recuperação de IAM com stent. Telemetria recente mostra extrassístoles frequentes — monitorar de perto. Relatou aderência à medicação pós-IAM. Solicitar Holter de 24h na próxima consulta."
         }
-      ]
+      ],
+      "resumo_clinico": "Paciente de 58 anos em recuperação de infarto agudo do miocárdio (março/2026) tratado com angioplastia e stent em artéria descendente anterior. Hipertensa e dislipidêmica. Em uso de AAS, Atorvastatina, Enalapril e Bisoprolol. Telemetria recente mostra 30% de batimentos irregulares com extrassístoles ventriculares frequentes. Refere aderência à medicação pós-IAM. Conduta: vigilância estreita, solicitar Holter de 24h na próxima consulta.",
+      "medico_responsavel": {
+        "nome": "Dr. Robert Chase",
+        "crm": "SP-178432",
+        "especialidade": "Cardiologia"
+      }
     },
     {
       "id": "PEDRO",
@@ -392,7 +555,23 @@
           "data": "2026-11-12",
           "especialidade": "Cardiologia pediátrica",
           "status": "agendada"
-        }
+        },
+        "historico": [
+          {
+            "data": "2026-05-12",
+            "tipo": "Cardiologia pediátrica",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Arritmia sinusal benigna, comum na idade. Sem repercussão clínica.",
+            "status": "realizada"
+          },
+          {
+            "data": "2025-10-18",
+            "tipo": "Cardiologia pediátrica",
+            "medico": "Dr. Robert Chase",
+            "resumo": "Primeira avaliação por queixa de palpitações ocasionais. ECG: arritmia sinusal respiratória.",
+            "status": "realizada"
+          }
+        ]
       },
       "exames_recentes": [
         {
@@ -408,7 +587,13 @@
           "medico": "Dr. Robert Chase",
           "texto": "Criança de 9 anos com arritmia sinusal respiratória — achado benigno e comum nessa faixa etária. FC basal de ~92 bpm normal para a idade. Pais orientados, sem necessidade de medicação. Acompanhamento de rotina."
         }
-      ]
+      ],
+      "resumo_clinico": "Criança de 9 anos com arritmia sinusal respiratória — achado benigno e comum nessa faixa etária, sem repercussão clínica. Frequência cardíaca basal de ~92 bpm (normal para idade). Telemetria com 2% de batimentos irregulares (variação fisiológica). Sem medicação em uso. Conduta: acompanhamento de rotina, pais orientados sobre natureza benigna do achado.",
+      "medico_responsavel": {
+        "nome": "Dr. Robert Chase",
+        "crm": "SP-178432",
+        "especialidade": "Cardiologia"
+      }
     }
   ]
 }
