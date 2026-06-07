@@ -35,13 +35,20 @@ def layout(**kwargs):
 @callback(
     Output("prontuario-container", "children"),
     Input("perfil-ativo", "data"),
+    Input("papel-ativo", "data"),
     prevent_initial_call=False,
 )
-def _renderizar_prontuario(perfil_data):
-    """Renderiza o prontuário do paciente ativo.
+def _renderizar_prontuario(perfil_data, papel_data):
+    """Renderiza o prontuário do paciente ativo, parametrizado por papel.
 
-    perfil_data tem estrutura {"id": "<PID>"} (definida no Store global
-    em app.py). Default GABRIEL se Store None/vazio.
+    perfil_data tem estrutura {"id": "<PID>"} (Store global em app.py).
+    papel_data tem estrutura {"role": "paciente"|"medico"} (fase 1).
+    Default GABRIEL + papel='paciente' se Stores None/vazios.
+
+    Quando o médico clica num card do /medico/caseload (fase 3), o callback
+    do caseload escreve papel-ativo={'role':'medico'} ANTES de navegar pra cá.
+    O render_prontuario com papel='medico' adiciona os 2 blocos extras
+    (anotações + aprovação de rascunho) e usa accent verde (SUCCESS).
     """
     if isinstance(perfil_data, dict):
         paciente_id = perfil_data.get("id") or "GABRIEL"
@@ -51,4 +58,8 @@ def _renderizar_prontuario(perfil_data):
     else:
         paciente_id = "GABRIEL"
 
-    return render_prontuario(paciente_id, papel="paciente")
+    papel = "paciente"  # default seguro
+    if isinstance(papel_data, dict):
+        papel = papel_data.get("role") or "paciente"
+
+    return render_prontuario(paciente_id, papel=papel)

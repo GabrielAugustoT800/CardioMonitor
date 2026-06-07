@@ -36,18 +36,26 @@ from utils.theme import (
 from shared.patient_registry import get_patient
 from shared.telemetry_store import _FALLBACK_CSV_BY_ID
 
+# Semaforo de risco: movido pra modulo proprio (fase 3) — reusado pelo caseload
+# medico e futura fila de alertas. Re-exportado aqui pra compat retroativa
+# de callers internos.
+from utils.semaforo import calcular_semaforo, semaforo_chip  # noqa: E402,F401
+
 
 # =============================================================================
 # Helpers
 # =============================================================================
 
-# Mapeamento CID3 -> "grave" (CIDs cardiovasculares de alta gravidade).
-# I48 FA, I21 IAM agudo, I50 IC, I20 angina, I25 doença isquêmica crônica.
-_CIDS_GRAVES = {"I48", "I21", "I50", "I20", "I25"}
+# _CIDS_GRAVES, _calcular_semaforo, _semaforo_chip MOVIDOS pra utils/semaforo.py
+# (fase 3). Renomeados pra calcular_semaforo / semaforo_chip (publicos).
+# Re-exportados via 'from utils.semaforo import ...' no topo deste modulo.
 
 
-def _csv_do_paciente(paciente_id: str):
-    """Resolve o CSV de telemetria do paciente via _FALLBACK_CSV_BY_ID."""
+def csv_do_paciente(paciente_id: str):
+    """Resolve o CSV de telemetria do paciente via _FALLBACK_CSV_BY_ID.
+
+    Publicada (sem underscore, fase 3) pra ser usada pelo caseload do medico.
+    """
     return _FALLBACK_CSV_BY_ID.get(paciente_id)
 
 
@@ -57,89 +65,6 @@ def _iniciais(nome: str) -> str:
     if not partes:
         return "??"
     return (partes[0][0] + (partes[1][0] if len(partes) > 1 else "")).upper()
-
-
-def _calcular_semaforo(paciente: dict, df: pd.DataFrame | None) -> tuple[str, str]:
-    """Lógica v2 validada: telemetria define piso + condição modificador.
-
-    Regras:
-    1. Piso pela telemetria (% irregular das últimas 50 leituras):
-       >=25% -> vermelho (2), 10-25% -> amarelo (1), <10% -> verde (0).
-    2. Condição grave ATIVA/em recuperação: sobe pra vermelho se tele >=10%,
-       senão amarelo.
-    3. Condição grave CONTROLADA: piso amarelo.
-    4. EM ACOMPANHAMENTO: piso amarelo.
-    5. CHA2DS2-VA: informativo, NÃO soma nível.
-
-    Returns:
-        (cor: 'verde'|'amarelo'|'vermelho', justificativa: str)
-    """
-    # 1) piso pela telemetria
-    if df is None or df.empty or "status" not in df.columns:
-        nivel = 1
-        base = "sem dados de telemetria"
-    else:
-        ult = df.tail(50)
-        n = len(ult)
-        irreg = int((ult["status"] == "irregular").sum())
-        pct = (irreg / n * 100) if n else 0.0
-        if pct >= 25:
-            nivel, base = 2, f"telemetria alta ({pct:.0f}% irregular)"
-        elif pct >= 10:
-            nivel, base = 1, f"telemetria moderada ({pct:.0f}% irregular)"
-        else:
-            nivel, base = 0, f"telemetria estável ({pct:.0f}% irregular)"
-        pct_atual = pct
-    pct_atual = locals().get("pct_atual", 0.0)
-
-    # 2-4) condições
-    grave_ativa = grave_controlada = acompanhamento = False
-    for c in paciente.get("condicoes_ativas", []):
-        cid3 = (c.get("cid") or "")[:3]
-        status_c = (c.get("status") or "").lower()
-        eh_grave = cid3 in _CIDS_GRAVES
-        if eh_grave and status_c in ("ativa", "em recuperação", "em recuperacao"):
-            grave_ativa = True
-        elif eh_grave and status_c == "controlada":
-            grave_controlada = True
-        if "acompanhamento" in status_c:
-            acompanhamento = True
-
-    notas = []
-    if grave_ativa:
-        if pct_atual >= 10:
-            nivel = max(nivel, 2)
-        else:
-            nivel = max(nivel, 1)
-        notas.append("condição grave ativa")
-    if grave_controlada:
-        nivel = max(nivel, 1)
-        notas.append("condição grave controlada")
-    if acompanhamento:
-        nivel = max(nivel, 1)
-        notas.append("em acompanhamento")
-
-    cor = {0: "verde", 1: "amarelo", 2: "vermelho"}[min(nivel, 2)]
-    justif = base + (" | " + " + ".join(notas) if notas else "")
-    return cor, justif
-
-
-def _semaforo_chip(cor: str, justificativa: str = "") -> html.Span:
-    """Chip visual do semáforo. Reusa .hud-chip do CSS."""
-    mapa = {
-        "verde": ("hud-chip--ok", "🟢 Risco baixo"),
-        "amarelo": ("hud-chip--warn", "🟡 Atenção"),
-        "vermelho": ("hud-chip--bad", "🔴 Risco alto"),
-    }
-    css_cls, label = mapa.get(cor, ("hud-chip--ok", cor))
-    return html.Span(
-        className=f"hud-chip {css_cls}",
-        title=justificativa,
-        children=[
-            html.Span(className="hud-chip__led"),
-            html.Span(label, className="hud-chip__label"),
-        ],
-    )
 
 
 def _kv_line(label: str, value, accent: str = PRIMARY_BLUE) -> html.Div:
@@ -197,7 +122,7 @@ def _bloco_identidade_e_medico(paciente: dict, accent: str,
 
     chip_status = None
     if semaforo:
-        chip_status = _semaforo_chip(*semaforo)
+        chip_status = semaforo_chip(*semaforo)
 
     return html.Div(style={
         "display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "16px",
@@ -921,7 +846,7 @@ def render_prontuario(paciente_id: str, papel: str = "paciente") -> html.Div:
             ]),
         ])
 
-    csv_path = _csv_do_paciente(paciente_id)
+    csv_path = csv_do_paciente(paciente_id)
     df = None
     if csv_path is not None and csv_path.exists():
         try:
@@ -930,7 +855,7 @@ def render_prontuario(paciente_id: str, papel: str = "paciente") -> html.Div:
             df = None
 
     accent = SUCCESS if papel == "medico" else PRIMARY_BLUE
-    semaforo = _calcular_semaforo(paciente, df) if papel == "medico" else None
+    semaforo = calcular_semaforo(paciente, df) if papel == "medico" else None
 
     blocos = [
         _bloco_hero(paciente, papel, accent),
