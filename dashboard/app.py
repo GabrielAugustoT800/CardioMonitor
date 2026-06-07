@@ -142,13 +142,10 @@ app.layout = html.Div(className="app-shell", children=[
     # estado atual) ou "medico". Setado no /login, lido pelo nav filtrado +
     # guard de rota. storage_type="session" zera ao fechar aba.
     dcc.Store(id="papel-ativo", storage_type="session", data={"role": "paciente"}),
-    # J.1.b — trigger pra forçar reload de /meu-perfil após criar/editar perfil.
-    # O dcc.Location não re-renderiza quando pathname retornado é igual ao atual
-    # (ex: estamos em /meu-perfil e callback retorna /meu-perfil). Workaround:
-    # callback escreve timestamp aqui, clientside callback em meu_perfil.py
-    # detecta mudança e chama window.location.reload().
-    dcc.Store(id="meu-perfil-refresh", data=None),
-    html.Div(id="meu-perfil-reload-dummy", style={"display": "none"}),
+    # Stores meu-perfil-refresh e meu-perfil-reload-dummy REMOVIDOS (fase 2c):
+    # workaround do J.1.b pra reload do formulario de criacao de /meu-perfil.
+    # /meu-perfil foi deletado, callbacks orfaos cairam com ele.
+
     # CHAT INTEGRATION: audio element global pra alerts do chatbot
     html.Audio(id="audio-alert", src="/assets/alert.wav",
                className="blua-audio-alert", autoPlay=False),
@@ -219,33 +216,10 @@ def _trocar_perfil_ativo(perfil_id):
     return {"id": perfil_id}, "/prontuario"
 
 
-# J.1.b fix-up (smoke final): label dinâmico do dropdown topbar REMOVIDO.
-# Bug observado: callback que outputava topbar-perfil-dropdown.options a cada
-# mudança de hud-url.pathname disparava re-render do react-select v5 do Dash 4,
-# que resetava o value pro primeiro option (GABRIEL). Reset disparava
-# _trocar_perfil_ativo que navegava pra /gabriel — clicar MONITOR ou ANALISE
-# voltava pra /gabriel.
-# Trade-off: label dropdown fica estático "Meu Perfil" (sem mostrar primeiro
-# nome do usuário). Estética sacrificada em troca de navegação correta.
-# Documentado em PENDENCIAS_POS_INTEGRACAO.md como pendência menor pós-J.
-
-
-# Sync URL → dropdown value. Diferente da regressão J.1.4 (que mexia em options
-# causando re-render react-select). Aqui só atualizamos value com dash.no_update
-# guard pra evitar ping-pong com _trocar_perfil_ativo.
-@app.callback(
-    Output("topbar-perfil-dropdown", "value"),
-    Input("hud-url", "pathname"),
-    State("topbar-perfil-dropdown", "value"),
-    prevent_initial_call=False,
-)
-def _sync_dropdown_to_url(pathname, current_value):
-    """URL → dropdown. dash.no_update quando value já bate evita loop."""
-    if pathname == "/meu-perfil" and current_value != "MEU_PERFIL":
-        return "MEU_PERFIL"
-    if pathname == "/gabriel" and current_value != "GABRIEL":
-        return "GABRIEL"
-    return dash.no_update
+# Callback _sync_dropdown_to_url REMOVIDO (fase 2c): sincronizava dropdown
+# topbar com pathname das rotas legacy /gabriel e /meu-perfil, que foram
+# deletadas. Sem rotas dedicadas, o dropdown e fonte da verdade — _trocar_
+# perfil_ativo escreve no Store perfil-ativo e navega pro /prontuario.
 
 
 # Callback _resetar_tick_rehidratacao REMOVIDO (lote 2 etapa 3): escrevia no

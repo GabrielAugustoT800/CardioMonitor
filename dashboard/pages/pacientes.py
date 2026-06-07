@@ -5,13 +5,21 @@ import dash
 from dash import html, dcc
 from shared.patient_registry import get_patient
 
-dash.register_page(__name__, path="/pacientes", name="Pacientes", order=6)
+# role="oculto" (fase 2c): pagina /pacientes ficou redundante com o dropdown
+# topbar + /prontuario data-driven. Mantida acessivel por URL pra rollback /
+# debug, mas fora do nav do paciente.
+dash.register_page(__name__, path="/pacientes", name="Pacientes",
+                   role="oculto", order=6)
 
-PERFIS_GERENCIADOS = ["GABRIEL", "MEU_PERFIL"]
+# Lista dos pacientes da clinica do Dr. Chase. MEU_PERFIL (id antigo) removido —
+# /meu-perfil nao existe mais (fase 2c). LUCAS/MARIA/HELENA/PEDRO adicionados
+# pra refletir o caseload real; todos os cards apontam pra /prontuario, que
+# resolve o paciente ativo via dropdown topbar (perfil-ativo Store).
+PERFIS_GERENCIADOS = ["GABRIEL", "LUCAS", "MARIA", "HELENA", "PEDRO"]
 
 
 def _card_perfil(perfil_id: str) -> html.Div:
-    """Card de um perfil com link pra sua página."""
+    """Card de um perfil com link pro /prontuario data-driven."""
     perfil = get_patient(perfil_id)
     if not perfil:
         return html.Div([
@@ -21,7 +29,6 @@ def _card_perfil(perfil_id: str) -> html.Div:
 
     nome = perfil.get("nome") or "Sem nome"
     idade = perfil.get("idade")
-    rota = "/gabriel" if perfil_id == "GABRIEL" else "/meu-perfil"
     descricao = perfil.get("_meta", {}).get("descricao", "")
 
     children = [
@@ -34,8 +41,10 @@ def _card_perfil(perfil_id: str) -> html.Div:
     ]
     if descricao:
         children.append(html.P(descricao, className="pacientes-card__descricao"))
+    # Sempre aponta pro /prontuario — paciente ativo via dropdown topbar.
     children.append(
-        dcc.Link("Ver prontuário", href=rota, className="hud-btn hud-btn--ghost")
+        dcc.Link("Ver prontuário", href="/prontuario",
+                 className="hud-btn hud-btn--ghost")
     )
 
     return html.Div(children, className="hud-panel pacientes-card")
@@ -46,8 +55,8 @@ def layout():
         html.Div([
             html.H1("Gestão de Perfis"),
             html.P(
-                "Sistema gerencia 2 perfis: Gabriel (paciente canônico do projeto, "
-                "dados completos) e Meu Perfil (usuário do sistema, customizável)."
+                "Caseload do Dr. Robert Chase — 5 pacientes da clínica. "
+                "Selecione um perfil no dropdown topbar para abrir o prontuário."
             ),
         ], className="hud-hero"),
 
@@ -57,8 +66,7 @@ def layout():
 
         html.Div([
             html.Em(
-                "Para editar dados do Meu Perfil, use o chatbot (tool "
-                "criar_perfil_paciente) ou edite data/mocks/perfis_clinicos.json."
+                "Para editar dados clínicos, edite data/mocks/perfis_clinicos.json."
             ),
         ], className="hud-info", style={"marginTop": "24px"}),
 

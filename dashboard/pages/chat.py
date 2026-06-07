@@ -92,9 +92,7 @@ print("[dash_app] Grafo pronto.")
 # reinicialização do app. Refresh em runtime (criar perfil via chatbot
 # ou UI/J.1) precisaria callback dinâmico — fora do escopo do J.7.
 def _format_label(p: dict) -> str:
-    nome = p.get("nome") or (
-        "Meu Perfil" if p["id"] == "MEU_PERFIL" else f"Perfil {p['id']}"
-    )
+    nome = p.get("nome") or f"Perfil {p['id']}"
     idade = p.get("idade")
     return f"{nome} — {idade}a" if idade is not None else nome
 
@@ -157,10 +155,10 @@ def patient_card(perfil_id: str):
     perfil = get_patient(perfil_id) if perfil_id else None
 
     if not perfil or not perfil.get("nome"):
-        # MEU_PERFIL não preenchido ou perfil inexistente
+        # Perfil inexistente — selecionar outro paciente no dropdown topbar.
         iniciais = "??"
-        nome = "Perfil não preenchido"
-        meta = "Crie em /meu-perfil"
+        nome = "Perfil não encontrado"
+        meta = "Selecione um paciente no dropdown acima"
         condicoes = "—"
     else:
         nome = perfil["nome"]
