@@ -61,3 +61,6 @@ pacientes_csv/
 # Backups locais (ex: perfis_clinicos.json.bak_2pacientes)
 *.bak
 *.bak_*
+
+# Runtime data (anotacoes da demo, etc.) — fase 4A
+data/runtime/

@@ -142,6 +142,10 @@ app.layout = html.Div(className="app-shell", children=[
     # estado atual) ou "medico". Setado no /login, lido pelo nav filtrado +
     # guard de rota. storage_type="session" zera ao fechar aba.
     dcc.Store(id="papel-ativo", storage_type="session", data={"role": "paciente"}),
+    # Trigger pra re-render do prontuario apos salvar anotacao clinica (fase 4a).
+    # storage_type='memory' — so serve pra disparar callback no mesmo turno;
+    # nao precisa persistir entre reloads (o arquivo runtime ja persiste).
+    dcc.Store(id="anotacoes-refresh", storage_type="memory", data=0),
     # Stores meu-perfil-refresh e meu-perfil-reload-dummy REMOVIDOS (fase 2c):
     # workaround do J.1.b pra reload do formulario de criacao de /meu-perfil.
     # /meu-perfil foi deletado, callbacks orfaos cairam com ele.

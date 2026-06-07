@@ -735,9 +735,23 @@ def _blocos_telemetria(df: pd.DataFrame, accent: str) -> list:
 # ── Blocos exclusivos do médico ──────────────────────────────────────────────
 
 def _bloco_anotacoes(paciente: dict) -> html.Div:
-    """Anotações clínicas — só médico. Fase 2A.2: render read-only (mostra as
-    anotações existentes). Edição/persistência vem na Fase 4."""
-    anotacoes = paciente.get("anotacoes_medicas", [])
+    """Anotações clínicas — só médico. Fase 4A: render + UI editável.
+
+    Mescla anotações canônicas (do perfis_clinicos.json) com runtime (do
+    arquivo data/runtime/anotacoes_demo.json, gitignored), ordenadas por
+    data desc. IDs do textarea/botão/feedback são pattern-matching
+    ({"type": ..., "pid": pid}) — cada paciente tem sua trinca, mas um
+    callback unico em pages/prontuario.py atende todos.
+    """
+    # Import tardio pra evitar ciclo: anotacoes_runtime não depende de nada
+    # daqui, mas separar a importação mantém o módulo carregado só quando
+    # o bloco médico de fato renderiza.
+    from utils.anotacoes_runtime import todas_anotacoes
+
+    pid = paciente.get("id", "")
+    anotacoes = todas_anotacoes(pid, paciente)
+
+    # Lista de anotações (canônicas + runtime, ordenadas por data desc)
     if anotacoes:
         items = [
             html.Div(style={
@@ -762,27 +776,59 @@ def _bloco_anotacoes(paciente: dict) -> html.Div:
                 }),
             ]) for a in anotacoes
         ]
-        body = html.Div(items)
+        lista = html.Div(items)
     else:
-        body = html.P("Sem anotações registradas.",
-                      style={"margin": 0, "color": TEXT_MUTED,
-                             "fontStyle": "italic"})
+        lista = html.P(
+            "Nenhuma anotação ainda.",
+            style={"margin": "8px 0", "color": TEXT_MUTED, "fontStyle": "italic"},
+        )
+
+    # Formulário: textarea + botão + feedback. IDs pattern-matching por
+    # paciente (o callback _salvar_anotacao em pages/prontuario.py usa ALL).
+    form = html.Div([
+        dcc.Textarea(
+            id={"type": "anotacao-input", "pid": pid},
+            placeholder="Nova anotação clínica…",
+            style={
+                "width": "100%", "minHeight": "80px",
+                "padding": "8px", "marginBottom": "8px",
+                "border": f"1px solid {BORDER}", "borderRadius": "4px",
+                "fontFamily": "inherit", "fontSize": "0.86rem",
+                "resize": "vertical",
+            },
+        ),
+        html.Div([
+            html.Button(
+                "Salvar anotação",
+                id={"type": "anotacao-salvar", "pid": pid},
+                n_clicks=0,
+                className="hud-btn",
+                style={"padding": "8px 16px"},
+            ),
+            html.Span(
+                id={"type": "anotacao-feedback", "pid": pid},
+                style={
+                    "marginLeft": "12px",
+                    "color": TEXT_MUTED,
+                    "fontSize": "0.82rem",
+                    "fontFamily": "JetBrains Mono, Consolas, monospace",
+                },
+            ),
+        ], style={"display": "flex", "alignItems": "center"}),
+    ], style={"marginTop": "8px"})
+
     return hud_panel(
         title="Anotações Clínicas",
         status="VISÍVEL SÓ AO MÉDICO",
         accent=SUCCESS,
         children=html.Div([
-            body,
-            html.Div(
-                "Edição e persistência: implementação na Fase 4 do app médico.",
-                style={
-                    "marginTop": "10px",
-                    "padding": "8px 12px",
-                    "fontSize": "0.74rem", "color": TEXT_MUTED,
-                    "fontStyle": "italic",
-                    "borderTop": f"1px dashed {BORDER}",
-                },
-            ),
+            lista,
+            html.Hr(style={
+                "margin": "14px 0",
+                "border": "none",
+                "borderTop": f"1px dashed {BORDER}",
+            }),
+            form,
         ]),
     )
 
