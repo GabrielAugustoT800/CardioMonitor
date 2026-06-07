@@ -4,7 +4,8 @@ Run with:  python app.py
 
 from __future__ import annotations
 
-import uuid  # CHAT INTEGRATION: thread_id para dcc.Store global
+# uuid removido: thread_id/cliente_id agora gerados lazy em chat.py
+# (_garantir_perfil), não mais no literal do dcc.Store (lote 2 etapa 2).
 from datetime import datetime, timezone
 from pathlib import Path  # FIX 8.5: pages_folder absoluto
 
@@ -109,12 +110,15 @@ app.layout = html.Div(className="app-shell", children=[
     # CHAT INTEGRATION: estado de sessão do chatbot preservado entre páginas.
     # storage_type default ("memory") — vai zerar ao recarregar a aba.
     # Para sobreviver a refresh, mudar para storage_type="session".
-    dcc.Store(id="session-data", storage_type="session", data={
-    "thread_id": str(uuid.uuid4()),
-    "mensagens": [],
-    "flags_safety_anteriores": [],
-    "ultimo_estado": None,
-}),
+    # session-data segmentado por paciente (lote 2 etapa 2):
+    # storage_type="local" sobrevive F5/fechar aba (era "session").
+    # cliente_id gerado LAZY no 1o turno em chat.py (era str(uuid.uuid4())
+    # no literal = avaliado 1x no import, igual pra todos os clientes ->
+    # cross-talk). Estrutura: {cliente_id, perfis: {GABRIEL: {...}, ...}}.
+    dcc.Store(id="session-data", storage_type="local", data={
+        "cliente_id": None,
+        "perfis": {},
+    }),
     # C13: perfil ativo (atalho de navegação contextual entre Gabriel e Meu Perfil)
     # storage_type="session" (não "local") — zera ao fechar aba pra evitar
     # dessincronização entre dropdown (value="GABRIEL" hardcoded) e Store

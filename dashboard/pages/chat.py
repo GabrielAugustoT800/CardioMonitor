@@ -473,6 +473,31 @@ def _refresh_chat_dropdown_options(pathname):
     ]
 
 
+def _garantir_perfil(sessao, paciente_id):
+    """Garante session-data segmentado e retorna (sessao, perfil, thread_id).
+
+    Estrutura nova (lote 2 etapa 2): session-data = {cliente_id, perfis: {...}}.
+    - cliente_id gerado LAZY no 1o uso (resolve uuid-no-import: por navegador).
+    - compartimento do paciente criado sob demanda.
+    - thread_id do grafo = "<cliente_id>::<paciente_id>" — isolamento total no
+      MemorySaver (nem cross-talk entre clientes, nem entre pacientes).
+    """
+    if not sessao or not isinstance(sessao, dict):
+        sessao = {"cliente_id": None, "perfis": {}}
+    if not sessao.get("cliente_id"):
+        sessao["cliente_id"] = str(uuid.uuid4())
+    sessao.setdefault("perfis", {})
+    if paciente_id not in sessao["perfis"]:
+        sessao["perfis"][paciente_id] = {
+            "mensagens": [],
+            "flags_safety_anteriores": [],
+            "ultimo_estado": None,
+        }
+    perfil = sessao["perfis"][paciente_id]
+    thread_id = f"{sessao['cliente_id']}::{paciente_id}"
+    return sessao, perfil, thread_id
+
+
 @callback(
     Output("session-data", "data"),
     # chat-area e user-input.value tem allow_duplicate=True porque tambem
@@ -501,17 +526,22 @@ def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
                        mensagem, beneficiario, sessao):
     trig = ctx.triggered_id
 
+    # Resolve o compartimento do paciente ativo (segmentado por paciente).
+    beneficiario = beneficiario or "GABRIEL"
+    sessao, perfil, thread_id = _garantir_perfil(sessao, beneficiario)
+
     # Reset de sessão — limpa só a UI, MANTÉM thread_id (contexto LangGraph
     # preservado). Útil pra demo: apresentador limpa a tela visualmente sem
     # perder o fio da conversa que o chatbot já tem internamente.
     if trig == "btn-nova-sessao":
-        nova_sessao = {
-            "thread_id": sessao["thread_id"],  # preserva contexto do grafo
+        # Zera SÓ o compartimento do paciente ativo — preserva os outros
+        # pacientes. cliente_id estável (mesmo thread base no grafo).
+        sessao["perfis"][beneficiario] = {
             "mensagens": [],
             "flags_safety_anteriores": [],
             "ultimo_estado": None,
         }
-        return (nova_sessao,
+        return (sessao,
                 [html.Div("Nova sessão iniciada.", className="hud-info",
                            style={"alignSelf": "center"})],
                 "—", "—", "—", "—", "—", "—",
@@ -524,7 +554,7 @@ def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
         try:
             estado = aprovar_rascunho_prescricao(
                 grafo=GRAFO,
-                thread_id=sessao["thread_id"],
+                thread_id=thread_id,  # composto: cliente_id::paciente_id
                 aprovado=aprovado,
             )
         except Exception as exc:
@@ -546,9 +576,9 @@ def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
             estado = executar_turno(
                 grafo=GRAFO,
                 mensagem_usuario=mensagem,
-                thread_id=sessao["thread_id"],
+                thread_id=thread_id,  # composto: cliente_id::paciente_id
                 beneficiario_id=beneficiario,
-                flags_safety_anteriores=sessao.get("flags_safety_anteriores", []),
+                flags_safety_anteriores=perfil.get("flags_safety_anteriores", []),
             )
         except Exception as exc:
             print(f"[dash_app] Erro: {exc}")
@@ -564,11 +594,11 @@ def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
                      or estado.get("agente_ativo") == "escalada_humana"
                      or "192" in resposta_final)
 
-    sessao["mensagens"].append({"role": "user", "content": mensagem})
-    sessao["mensagens"].append({"role": "assistant", "content": resposta_final,
+    perfil["mensagens"].append({"role": "user", "content": mensagem})
+    perfil["mensagens"].append({"role": "assistant", "content": resposta_final,
                                   "emergencia": eh_emergencia})
-    sessao["flags_safety_anteriores"] = flags
-    sessao["ultimo_estado"] = {
+    perfil["flags_safety_anteriores"] = flags
+    perfil["ultimo_estado"] = {
         "intent": estado.get("intent_classificada"),
         "confianca_intent": estado.get("confianca_intent"),
         "agente_ativo": estado.get("agente_ativo"),
@@ -581,15 +611,15 @@ def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
         "requer_aprovacao_humana": estado.get("requer_aprovacao_humana", False),
     }
 
-    # Renderizar chat
+    # Renderizar chat — bolhas do paciente ativo
     chat_children = [
         chat_bubble(m["role"], m["content"],
                     emergencia=m.get("emergencia", False))
-        for m in sessao["mensagens"]
+        for m in perfil["mensagens"]
     ]
 
     # Painel técnico
-    ult = sessao["ultimo_estado"]
+    ult = perfil["ultimo_estado"]
 
     confidence_view = confidence_badge(ult["confidence_nivel"],
                                         ult["confidence_score"] or 0)
