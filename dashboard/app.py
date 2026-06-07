@@ -219,14 +219,11 @@ def _sync_dropdown_to_url(pathname, current_value):
         return "GABRIEL"
     return dash.no_update
 
-@app.callback(
-    Output("chat-rehidratar-tick", "n_intervals"),
-    Input("hud-url", "pathname"),
-    prevent_initial_call=True,
-)
-def _resetar_tick_rehidratacao(pathname):
-    if pathname == "/chat":
-        return 0
-    return no_update
+
+# Callback _resetar_tick_rehidratacao REMOVIDO (lote 2 etapa 3): escrevia no
+# componente fantasma chat-rehidratar-tick que não existe no layout. A
+# rehidratação agora usa Input("beneficiario-select","value") em chat.py.
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=8050)

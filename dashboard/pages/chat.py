@@ -276,14 +276,11 @@ layout = html.Div([
     html.Audio(id="audio-alert", src="/assets/alert.wav",
                className="blua-audio-alert", autoPlay=False),
 
-    # J.4 — trigger de rehidratação. Dispara 1x após o layout montar
-    # (max_intervals=1) e força o callback _rehidratar_chat_area a popular
-    # chat-area com mensagens do session-data. Usar Interval em vez de
-    # Input(hud-url.pathname) porque o page_container do Dash multi-pages
-    # re-renderiza o layout DEPOIS dos callbacks que escutam pathname,
-    # sobrescrevendo o output. Interval só dispara quando o componente
-    # JÁ está montado, garantindo que o output sobrevive.
-    
+    # Rehidratação do chat: SEM dcc.Interval (lote 2 etapa 3). O gatilho é
+    # Input("beneficiario-select", "value") no _rehidratar_chat_area — dispara
+    # na troca de paciente E na re-montagem da página (dropdown recriado emite
+    # value após montar). Eliminado o Interval fantasma que nunca existiu.
+
     # Session storage — Passo 8.5: movido para o layout global do
     # app/unified_app.py com storage_type="session" (preserva conversa
     # entre páginas, reseta ao fechar a aba). Callbacks abaixo continuam
@@ -744,44 +741,42 @@ clientside_callback(
 
 
 # =============================================================================
-# J.4 — Rehidratação de chat-area ao re-entrar em /chat
+# Rehidratação do chat-area por paciente (lote 2, etapa 3)
 # =============================================================================
-# Bug: o layout do /chat é estático (children de chat-area hardcoded com
-# "Olá! Sou o BluaDiagnostics..."). Cada navegação pra /chat re-renderiza
-# o layout inicial, sobrescrevendo o histórico de bolhas. Session-data
-# (Store global) preserva as mensagens mas a UI não as exibe.
+# Gatilho: Input("beneficiario-select", "value"). Cobre os 2 casos:
+#   1. Troca de paciente no dropdown → mostra as bolhas daquele paciente
+#   2. Re-montagem da página (re-entrada em /chat) → o dropdown é recriado e
+#      emite seu value, disparando o callback DEPOIS do componente montar
+#      (evita o race do pathname que o blua-cardio TURBO sofreu — lá o
+#      page_container re-renderizava o layout DEPOIS dos callbacks de pathname).
 #
-# Fix: callback dispara em mudança de pathname; quando pathname == "/chat",
-# lê session-data.mensagens e re-renderiza bolhas via chat_bubble().
+# Fonte da verdade do paciente ativo = perfil-ativo Store, NÃO o dropdown
+# value. Na re-montagem o dropdown nasce com value="GABRIEL" e só depois o
+# _sync_chat_dropdown_from_store corrige pro paciente real — ler do Store
+# evita piscar Gabriel→Maria.
 #
-# Escopo: rehidrata apenas chat-area (mensagens). Painéis técnicos
-# (confidence/trajetória/RAG/tools/safety) voltam pra "—" ao re-entrar —
-# o histórico das mensagens é o que importa pro usuário; painéis populam
-# de novo no próximo turno do chatbot. Trade-off de simplicidade.
-
-
+# session-data como State (não Input) → não cascateia com envio de mensagem
+# (que já escreve chat-area via processar_mensagem + optimistic UI).
 @callback(
     Output("chat-area", "children", allow_duplicate=True),
-    Input("chat-rehidratar-tick", "n_intervals"),
+    Input("beneficiario-select", "value"),
     State("session-data", "data"),
+    State("perfil-ativo", "data"),
     prevent_initial_call=True,
 )
-def _rehidratar_chat_area(_n_intervals, sessao):
-    """Repopula chat-area.children a partir de session-data.mensagens
-    quando o layout do /chat termina de montar. Sem isso, mensagens
-    enviadas antes de sair da página somem visualmente ao voltar.
+def _rehidratar_chat_area(_dropdown_value, sessao, perfil_ativo):
+    """Rehidrata chat-area com as mensagens do paciente ativo.
 
-    Trigger via dcc.Interval em vez de Input(hud-url.pathname) porque
-    o page_container do Dash multi-pages re-renderiza o layout DEPOIS
-    dos callbacks que escutam pathname, sobrescrevendo o output."""
-    if not sessao or not sessao.get("mensagens"):
-        # Primeira visita ou sessão zerada — mantém o "Olá" inicial
-        return no_update
-    # Re-renderiza histórico
+    Retorna [] (chat vazio) quando o paciente não tem conversa ainda —
+    necessário pra LIMPAR as bolhas ao trocar pra um paciente sem histórico.
+    """
+    paciente_id = (perfil_ativo or {}).get("id") or "GABRIEL"
+    perfil = (sessao or {}).get("perfis", {}).get(paciente_id)
+    if not perfil or not perfil.get("mensagens"):
+        return []
     return [
-        chat_bubble(m["role"], m["content"],
-                    emergencia=m.get("emergencia", False))
-        for m in sessao["mensagens"]
+        chat_bubble(m["role"], m["content"], emergencia=m.get("emergencia", False))
+        for m in perfil["mensagens"]
     ]
 
 
