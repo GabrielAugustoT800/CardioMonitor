@@ -274,10 +274,20 @@ layout = html.Div([
     html.Audio(id="audio-alert", src="/assets/alert.wav",
                className="blua-audio-alert", autoPlay=False),
 
-    # Rehidratação do chat: SEM dcc.Interval (lote 2 etapa 3). O gatilho é
-    # Input("beneficiario-select", "value") no _rehidratar_chat_area — dispara
-    # na troca de paciente E na re-montagem da página (dropdown recriado emite
-    # value após montar). Eliminado o Interval fantasma que nunca existiu.
+    # Rehidratação do chat (fase 7a fix 2/2): dcc.Interval com max_intervals=1
+    # dispara 1x ~300ms apos o mount. Adicionado como Input do
+    # _rehidratar_chat_area pra rehidratar quando o usuario VOLTA pra /chat
+    # (paciente continua o mesmo -> dropdown.value nao muda -> callback nao
+    # disparava com gatilho antigo). Interval existe DENTRO do layout do
+    # chat -> par garantido com chat-area, sem race com page_container do
+    # multi-pages (problema documentado na Lote 2). Diferente do
+    # 'chat-rehidratar-tick' fantasma removido na Lote 2 etapa 3 — aquele
+    # nao existia no layout; ESTE existe.
+    dcc.Interval(
+        id="chat-mount-trigger",
+        interval=300,
+        max_intervals=1,
+    ),
 
     # Session storage — Passo 8.5: movido para o layout global do
     # app/unified_app.py com storage_type="session" (preserva conversa
@@ -775,15 +785,24 @@ clientside_callback(
 @callback(
     Output("chat-area", "children", allow_duplicate=True),
     Input("beneficiario-select", "value"),
+    # Fix 7A.3: trigger adicional pra rodar no mount da pagina. O Input(value)
+    # do dropdown nao muda quando o usuario volta pra /chat com o mesmo
+    # paciente — sem este Interval, callback nao disparava e chat-area ficava
+    # com a saudacao inicial hardcoded.
+    Input("chat-mount-trigger", "n_intervals"),
     State("session-data", "data"),
     State("perfil-ativo", "data"),
     prevent_initial_call=True,
 )
-def _rehidratar_chat_area(_dropdown_value, sessao, perfil_ativo):
+def _rehidratar_chat_area(_dropdown_value, _mount_trigger, sessao, perfil_ativo):
     """Rehidrata chat-area com as mensagens do paciente ativo.
 
     Retorna [] (chat vazio) quando o paciente não tem conversa ainda —
     necessário pra LIMPAR as bolhas ao trocar pra um paciente sem histórico.
+
+    Gatilhos:
+    - beneficiario-select.value: dispara ao trocar de paciente no dropdown.
+    - chat-mount-trigger.n_intervals: dispara 1x ao montar /chat (fix 7A.3).
     """
     paciente_id = (perfil_ativo or {}).get("id") or "GABRIEL"
     perfil = (sessao or {}).get("perfis", {}).get(paciente_id)
