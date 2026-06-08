@@ -1090,6 +1090,28 @@ def _bloco_aprovacao_rascunho(paciente: dict) -> html.Div:
     )
 
 
+def _bloco_calculadoras_clinicas(paciente: dict) -> html.Div:
+    """Bloco de calculadoras clínicas — só médico (fase 9).
+
+    Reusa _render_calculadoras_ui da rota /medico/calculadoras com
+    prefixo 'pron-' (evita colisão com IDs da rota 'rota-') e
+    pré-preenche idade, sexo + condições inferidas de condicoes_ativas.
+
+    Os callbacks que escutam estes IDs estão em dashboard/pages/prontuario.py
+    (não na page de calculadoras, pra manter cada callback no contexto
+    da página onde ele aparece).
+    """
+    from utils.calculadoras_ui import _render_calculadoras_ui
+
+    nome = paciente.get("nome", "—")
+    return hud_panel(
+        title="Calculadoras Clínicas",
+        status=f"PRÉ-PREENCHIDAS COM DADOS DE {nome.upper()}",
+        accent=SUCCESS,
+        children=_render_calculadoras_ui(prefixo="pron-", paciente=paciente),
+    )
+
+
 # =============================================================================
 # Função principal
 # =============================================================================
@@ -1167,6 +1189,7 @@ def render_prontuario(paciente_id: str, papel: str = "paciente") -> html.Div:
         ))
 
     if papel == "medico":
+        blocos.append(_bloco_calculadoras_clinicas(paciente))
         blocos.append(_bloco_anotacoes(paciente))
         # id no wrapper pra suportar scroll por hash URL (fase 5).
         blocos.append(html.Div(

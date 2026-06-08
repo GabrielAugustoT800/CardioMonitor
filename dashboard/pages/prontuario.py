@@ -22,6 +22,9 @@ from dash import (
 from utils.prontuario import render_prontuario
 from utils.anotacoes_runtime import salvar_anotacao
 from utils.rascunhos_runtime import aprovar, rejeitar
+from utils.calculadoras_ui import (
+    calcular_cha2ds2, calcular_hb, calcular_egfr, calcular_heart,
+)
 
 
 dash.register_page(
@@ -270,3 +273,68 @@ def _toggle_edit_rascunho(n_clicks_list, style_atual):
     atual = novo_estilo.get("display")
     novo_estilo["display"] = "block" if atual == "none" else "none"
     return novo_estilo
+
+
+# =============================================================================
+# Fase 9 — Calculadoras clínicas (bloco no prontuário, prefixo 'pron-')
+# =============================================================================
+# Os IDs do bloco vivem no layout do prontuário (renderizados por
+# utils/prontuario.py:_bloco_calculadoras_clinicas). Os callbacks ficam
+# aqui pra manter cada callback no contexto da página onde os componentes
+# aparecem. A lógica de cálculo (calcular_cha2ds2/hb/egfr/heart) está
+# em pages/medico/calculadoras.py — compartilhada com a rota autônoma.
+
+@callback(
+    Output("pron-cha-resultado", "children"),
+    Input("pron-cha-btn", "n_clicks"),
+    State("pron-cha-idade", "value"),
+    State("pron-cha-sexo", "value"),
+    State("pron-cha-fatores", "value"),
+    prevent_initial_call=True,
+)
+def _calc_cha_pron(n, idade, sexo, fatores):
+    if not n:
+        return no_update
+    return calcular_cha2ds2(idade, sexo, fatores)
+
+
+@callback(
+    Output("pron-hb-resultado", "children"),
+    Input("pron-hb-btn", "n_clicks"),
+    State("pron-hb-fatores", "value"),
+    prevent_initial_call=True,
+)
+def _calc_hb_pron(n, fatores):
+    if not n:
+        return no_update
+    return calcular_hb(fatores)
+
+
+@callback(
+    Output("pron-egfr-resultado", "children"),
+    Input("pron-egfr-btn", "n_clicks"),
+    State("pron-egfr-cr", "value"),
+    State("pron-egfr-idade", "value"),
+    State("pron-egfr-sexo", "value"),
+    prevent_initial_call=True,
+)
+def _calc_egfr_pron(n, cr, idade, sexo):
+    if not n:
+        return no_update
+    return calcular_egfr(cr, idade, sexo)
+
+
+@callback(
+    Output("pron-heart-resultado", "children"),
+    Input("pron-heart-btn", "n_clicks"),
+    State("pron-heart-hist", "value"),
+    State("pron-heart-ecg", "value"),
+    State("pron-heart-idade", "value"),
+    State("pron-heart-risco", "value"),
+    State("pron-heart-trop", "value"),
+    prevent_initial_call=True,
+)
+def _calc_heart_pron(n, h, e, i, r, t):
+    if not n:
+        return no_update
+    return calcular_heart(h, e, i, r, t)
