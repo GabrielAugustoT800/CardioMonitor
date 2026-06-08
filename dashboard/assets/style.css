@@ -274,8 +274,13 @@ code, .mono {
 
 .hud-hero {
     position: relative;
+    /* Fase 8.2: cor unica teal escuro #0F3D4F (substitui o gradient azul
+       anterior). Teal esta entre azul e verde na roda de cor — combina com
+       o tema paciente (topbar azul navy) E com o tema medico (topbar verde
+       denso) sem chocar com nenhum dos dois. Gradient mantido em 3 paradas
+       de teal pra preservar o efeito de profundidade do hero. */
     background: linear-gradient(130deg,
-        var(--hud-blue-darker) 0%, var(--hud-blue) 50%, var(--hud-cyan-deep) 100%);
+        #0A2E3D 0%, #0F3D4F 50%, #134B5E 100%);
     color: #FFFFFF;
     /* Fase 7B onda 1: padding fluido. 26px/32px fixo era pesado em 1366. */
     padding: 22px clamp(16px, 2.5vw, 32px);
