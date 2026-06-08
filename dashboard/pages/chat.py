@@ -519,6 +519,23 @@ def _garantir_perfil(sessao, paciente_id):
 )
 def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
                        mensagem, beneficiario, sessao):
+    # Guard contra disparo espurio em re-mount de pagina (fase 7a):
+    # quando o /chat e remontado (apos sair e voltar via nav), os botoes
+    # (btn-enviar, btn-nova-sessao, btn-hitl-*) e o user-input renascem com
+    # n_clicks=0 / n_submit=0. Dash considera isso uma "mudanca de Input"
+    # e dispara o callback, com ctx.triggered_id arbitrariamente apontando
+    # pra btn-nova-sessao. O branch de reset executava, zerava
+    # sessao["perfis"][pid]["mensagens"] e escrevia "Nova sessao iniciada."
+    # — fazia a mensagem do usuario sumir.
+    #
+    # prevent_initial_call=True NAO impede esse disparo (so impede na carga
+    # inicial da APP, nao em re-mount de componentes).
+    #
+    # Fix: se TODOS os contadores de interacao sao falsos (0/None), o
+    # callback nao foi disparado por clique/Enter real — ignora.
+    if not (n_enviar or n_submit or n_nova or n_aprovar or n_rejeitar):
+        return (no_update,) * 11
+
     trig = ctx.triggered_id
 
     # Resolve o compartimento do paciente ativo (segmentado por paciente).
