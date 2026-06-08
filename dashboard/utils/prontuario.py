@@ -1090,6 +1090,117 @@ def _bloco_aprovacao_rascunho(paciente: dict) -> html.Div:
     )
 
 
+def _bloco_timeline_paciente(paciente: dict) -> html.Div:
+    """Timeline cronológica do paciente — só médico (fase 10).
+
+    Lista vertical com linha conectora + bolinhas coloridas por tipo +
+    cards laterais. Ordem desc (mais recente em cima). 3 tipos:
+    CONSULTA (azul) · MEDICACAO (verde) · EXAME (cyan).
+    """
+    from utils.timeline import gerar_eventos_timeline
+
+    eventos = gerar_eventos_timeline(paciente)
+
+    if not eventos:
+        return hud_panel(
+            title="Linha do Tempo",
+            status="HISTÓRICO CLÍNICO",
+            accent=SUCCESS,
+            children=html.P(
+                "Sem eventos registrados.",
+                style={"color": TEXT_MUTED, "fontStyle": "italic",
+                       "margin": 0},
+            ),
+        )
+
+    cor_por_tipo = {
+        "CONSULTA":  PRIMARY_BLUE,
+        "MEDICACAO": SUCCESS,
+        "EXAME":     ACCENT_CYAN,
+    }
+    label_por_tipo = {
+        "CONSULTA":  "CONSULTA",
+        "MEDICACAO": "MEDICAÇÃO",
+        "EXAME":     "EXAME",
+    }
+
+    itens = []
+    for i, ev in enumerate(eventos):
+        cor = cor_por_tipo.get(ev.tipo, TEXT_MUTED)
+        eh_ultimo = (i == len(eventos) - 1)
+
+        # Linha vertical conectora (ausente no último item).
+        children_item = []
+        if not eh_ultimo:
+            children_item.append(html.Div(style={
+                "position": "absolute",
+                "left": "11px",
+                "top": "24px",
+                "bottom": "-16px",
+                "width": "2px",
+                "background": BORDER,
+            }))
+
+        # Bolinha colorida na linha.
+        children_item.append(html.Div(style={
+            "position": "absolute",
+            "left": "4px",
+            "top": "8px",
+            "width": "16px",
+            "height": "16px",
+            "borderRadius": "50%",
+            "background": cor,
+            "border": f"3px solid {cor}",
+            "zIndex": 1,
+        }))
+
+        # Card lateral com label + data + título + descrição.
+        children_item.append(html.Div([
+            html.Div([
+                html.Span(label_por_tipo.get(ev.tipo, ev.tipo), style={
+                    "color": cor, "fontSize": "0.7rem", "fontWeight": "700",
+                    "letterSpacing": "0.08em",
+                    "fontFamily": "JetBrains Mono, Consolas, monospace",
+                }),
+                html.Span(f"  ·  {ev.data_exibicao}", style={
+                    "color": TEXT_MUTED, "fontSize": "0.74rem",
+                    "fontFamily": "JetBrains Mono, Consolas, monospace",
+                }),
+            ], style={"marginBottom": "4px"}),
+            html.Div(ev.titulo, style={
+                "color": TEXT_DARK, "fontWeight": "600",
+                "fontSize": "0.9rem", "marginBottom": "2px",
+            }),
+            html.Div(ev.descricao, style={
+                "color": TEXT_MUTED, "fontSize": "0.82rem",
+                "lineHeight": "1.4",
+            }),
+        ], style={
+            "marginLeft": "36px",
+            "padding": "10px 14px",
+            "background": "rgba(0,0,0,0.02)",
+            "borderRadius": "4px",
+            "borderLeft": f"3px solid {cor}",
+        }))
+
+        itens.append(html.Div(
+            children_item,
+            style={
+                "position": "relative",
+                "marginBottom": "16px",
+                "minHeight": "32px",
+            },
+        ))
+
+    return hud_panel(
+        title="Linha do Tempo",
+        status=(f"{len(eventos)} EVENTO(S) · "
+                "ORDEM CRONOLÓGICA REVERSA"),
+        accent=SUCCESS,
+        children=html.Div(itens),
+    )
+
+
 def _bloco_calculadoras_clinicas(paciente: dict) -> html.Div:
     """Bloco de calculadoras clínicas — só médico (fase 9).
 
@@ -1189,6 +1300,7 @@ def render_prontuario(paciente_id: str, papel: str = "paciente") -> html.Div:
         ))
 
     if papel == "medico":
+        blocos.append(_bloco_timeline_paciente(paciente))
         blocos.append(_bloco_calculadoras_clinicas(paciente))
         blocos.append(_bloco_anotacoes(paciente))
         # id no wrapper pra suportar scroll por hash URL (fase 5).
