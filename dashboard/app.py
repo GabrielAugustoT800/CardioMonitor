@@ -59,7 +59,12 @@ def _nav_links(role_atual: str = "paciente"):
 
 
 def _topbar():
-    return html.Header(className="hud-topbar", children=[
+    # id e classe inicial pra suportar temas por papel (fase 8).
+    # Callback _aplicar_tema_topbar troca className conforme papel-ativo +
+    # pathname (login/paciente/medico).
+    return html.Header(id="topbar-root",
+                       className="hud-topbar hud-topbar--login",
+                       children=[
         html.Div(className="hud-topbar__brand", children=[
             html.Span("C+", className="mark"),
             html.Div([
@@ -249,6 +254,32 @@ def _nav_active(pathname, papel, _rascunhos_refresh):
             refresh=False,
         ))
     return links
+
+
+# Fase 8: tema visual da topbar conforme papel + rota.
+# - /login: tema cinza claro (neutro, ponto de entrada).
+# - papel=paciente: tema azul (default da .hud-topbar, sem modificador).
+# - papel=medico: tema verde denso.
+# Pathname tem prioridade sobre papel pra /login — quando o usuario vai pro
+# /login (via logout, etc.), a topbar fica neutra mesmo se Store ainda tem
+# papel residual num intervalo curto antes de _logout limpar.
+@app.callback(
+    Output("topbar-root", "className"),
+    Input("papel-ativo", "data"),
+    Input("hud-url", "pathname"),
+)
+def _aplicar_tema_topbar(papel_data, pathname):
+    if pathname == "/login":
+        return "hud-topbar hud-topbar--login"
+    papel = (papel_data or {}).get("role")
+    if papel == "medico":
+        return "hud-topbar hud-topbar--medico"
+    if papel == "paciente":
+        # default (azul atual) — sem classe modificadora.
+        return "hud-topbar"
+    # Sem papel valido e fora do /login: estado transicional ate o guard
+    # redirecionar. Mostra tema login (neutro) pra nao piscar cores erradas.
+    return "hud-topbar hud-topbar--login"
 
 
 # Fase 6: dropdown topbar agora tem options dinamicas + 2 atalhos especiais.

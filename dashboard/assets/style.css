@@ -167,6 +167,97 @@ code, .mono {
     60%, 100% { opacity: 0.35; }
 }
 
+/* -------- topbar themes (fase 8) ---------------------------------------- */
+/* Topbar tem 3 temas: default (paciente, azul atual definido acima),
+   --login (cinza claro neutro), --medico (verde denso).
+   Variantes especificas .hud-topbar.hud-topbar--X garantem que sobrescrevem
+   a regra .hud-topbar default sem precisar de !important (mesma especifidade
+   por causa do match duplo). _aplicar_tema_topbar (app.py) muda a className
+   conforme papel-ativo + pathname. */
+
+/* === TEMA LOGIN (cinza claro neutro) === */
+.hud-topbar.hud-topbar--login {
+    background: #F5F7FA;
+    color: #1A2333;
+    border-bottom: 1px solid #D5DCE5;
+}
+.hud-topbar--login .hud-topbar__brand {
+    color: #1A2333;
+}
+.hud-topbar--login .hud-topbar__brand .mark {
+    background: #0A4DA2;
+    color: #FFFFFF;
+}
+.hud-topbar--login .hud-topbar__brand small {
+    color: rgba(26, 35, 51, 0.7);
+}
+.hud-topbar--login .hud-topbar__nav a {
+    color: rgba(26, 35, 51, 0.78) !important;
+}
+.hud-topbar--login .hud-topbar__nav a:hover {
+    color: #1A2333 !important;
+    background: rgba(10, 77, 162, 0.08);
+    border-bottom-color: rgba(10, 77, 162, 0.5);
+}
+.hud-topbar--login .hud-topbar__nav a.active {
+    color: #0A4DA2 !important;
+    background: rgba(10, 77, 162, 0.12);
+    border-bottom-color: #0A4DA2;
+}
+.hud-topbar--login .hud-topbar__telemetry .tel {
+    color: rgba(26, 35, 51, 0.85);
+}
+.hud-topbar--login .hud-topbar__telemetry .tel .lbl {
+    color: rgba(26, 35, 51, 0.55);
+}
+.hud-topbar--login .hud-topbar__telemetry .tel .val {
+    color: #1A2333;
+}
+.hud-topbar--login .hud-btn--ghost {
+    color: #0A4DA2;
+    border-color: rgba(10, 77, 162, 0.45);
+}
+.hud-topbar--login .hud-btn--ghost:hover {
+    background: rgba(10, 77, 162, 0.08);
+    border-color: #0A4DA2;
+    color: #073E82;
+}
+
+/* === TEMA MEDICO (verde denso #0F7B5C, accent SUCCESS #1FAE6F) === */
+.hud-topbar.hud-topbar--medico {
+    background: #0F7B5C;
+    border-bottom: 2px solid var(--hud-success);
+}
+.hud-topbar--medico .hud-topbar__brand .mark {
+    background: var(--hud-success);
+    color: #FFFFFF;
+}
+.hud-topbar--medico .hud-topbar__nav a:hover {
+    color: #FFFFFF !important;
+    background: rgba(31, 174, 111, 0.18);
+    border-bottom-color: rgba(31, 174, 111, 0.7);
+}
+.hud-topbar--medico .hud-topbar__nav a.active {
+    color: #FFFFFF !important;
+    background: rgba(31, 174, 111, 0.28);
+    border-bottom-color: var(--hud-success);
+}
+.hud-topbar--medico .hud-btn--ghost {
+    color: #FFFFFF;
+    border-color: rgba(255, 255, 255, 0.45);
+}
+.hud-topbar--medico .hud-btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #FFFFFF;
+    color: #FFFFFF;
+}
+/* Badge ALERTAS no tema medico: fundo branco com numero verde — destaca
+   contra a topbar verde sem competir com o accent SUCCESS. */
+.hud-topbar--medico .hud-nav-link span[style*="background"] {
+    background: #FFFFFF !important;
+    color: #0F7B5C !important;
+}
+
 /* -------- page container ------------------------------------------------ */
 
 .hud-page {
