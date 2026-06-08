@@ -77,7 +77,8 @@ code, .mono {
     background: linear-gradient(180deg, var(--hud-blue-darker) 0%, var(--hud-blue-dark) 100%);
     color: #FFFFFF;
     border-bottom: 2px solid var(--hud-cyan);
-    padding: 10px 24px;
+    /* Fase 7B onda 1: padding lateral fluido. */
+    padding: 10px clamp(12px, 2vw, 24px);
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
@@ -134,6 +135,10 @@ code, .mono {
 
 .hud-topbar__telemetry {
     display: flex; gap: 18px; align-items: center;
+    /* Fase 7B onda 1: wrap defensivo — em 1366 com dropdown + SAIR + relogio,
+       pode estourar a coluna direita do grid auto/1fr/auto da topbar. */
+    flex-wrap: wrap;
+    justify-content: flex-end;
     font-family: 'JetBrains Mono', Consolas, monospace;
     font-size: 0.78rem;
 }
@@ -168,7 +173,10 @@ code, .mono {
     max-width: 1440px;
     width: 100%;
     margin: 0 auto;
-    padding: 22px 24px 48px;
+    /* Fase 7B onda 1: padding lateral fluido pra 1366-1920px. Antes 24px fixo
+       deixava conteudo colado nas bordas em laptops 1366. clamp escala
+       gradualmente entre 12px (extremo) e 24px (desktop largo). */
+    padding: 18px clamp(12px, 2vw, 24px) 36px;
 }
 
 /* -------- hero strip ---------------------------------------------------- */
@@ -178,7 +186,8 @@ code, .mono {
     background: linear-gradient(130deg,
         var(--hud-blue-darker) 0%, var(--hud-blue) 50%, var(--hud-cyan-deep) 100%);
     color: #FFFFFF;
-    padding: 26px 32px;
+    /* Fase 7B onda 1: padding fluido. 26px/32px fixo era pesado em 1366. */
+    padding: 22px clamp(16px, 2.5vw, 32px);
     margin-bottom: 20px;
     border-left: 4px solid var(--hud-cyan);
     clip-path: polygon(
@@ -393,6 +402,18 @@ code, .mono {
 .span-8 { grid-column: span 8; }
 .span-12 { grid-column: span 12; }
 
+/* Fase 7B onda 1: range de laptops comuns (1280-1440px). As @media abaixo
+   cobriam 1100 e 720, deixando laptops 1366 sem ajuste explicito. Aqui
+   apertamos paddings e o hero pra ganhar largura util. */
+@media (max-width: 1440px) {
+    .hud-page {
+        padding-left: clamp(8px, 1.5vw, 24px);
+        padding-right: clamp(8px, 1.5vw, 24px);
+    }
+    .hud-hero {
+        padding: 20px 24px;
+    }
+}
 @media (max-width: 1100px) {
     .grid-4, .grid-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -409,7 +430,9 @@ code, .mono {
 }
 .hud-controls .field {
     display: flex; flex-direction: column; gap: 4px;
-    min-width: 160px;
+    /* Fase 7B onda 1: tolerante a containers estreitos. min(160px, 100%)
+       degrada elegante quando o pai e menor que 160px. */
+    min-width: min(160px, 100%);
 }
 .hud-controls .field label {
     color: var(--hud-muted);
