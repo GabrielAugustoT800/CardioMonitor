@@ -114,15 +114,18 @@ def _salvar_anotacao(n_clicks_list, valores, refresh_atual):
     - Texto vazio/whitespace -> feedback "vazio", sem persistir.
     """
     if not n_clicks_list or not any(n for n in n_clicks_list if n):
-        return no_update, no_update, no_update
+        n = len(valores or [])
+        return no_update, [no_update] * n, [no_update] * n
 
     triggered = ctx.triggered_id
     if not isinstance(triggered, dict):
-        return no_update, no_update, no_update
+        n = len(valores or [])
+        return no_update, [no_update] * n, [no_update] * n
 
     pid = triggered.get("pid")
     if not pid:
-        return no_update, no_update, no_update
+        n = len(valores or [])
+        return no_update, [no_update] * n, [no_update] * n
 
     # Achar o valor correspondente ao paciente clicado. ctx.states_list[0]
     # é a lista dos State({"type":"anotacao-input","pid":ALL},"value") — seus
@@ -147,7 +150,8 @@ def _salvar_anotacao(n_clicks_list, valores, refresh_atual):
 
     n_targets = len(state_ids)
     if idx_clicado < 0 or n_targets == 0:
-        return no_update, no_update, no_update
+        n = len(valores or [])
+        return no_update, [no_update] * n, [no_update] * n
 
     valor = (valores or [None] * n_targets)[idx_clicado]
 

@@ -8,9 +8,13 @@
       "alteracao": "Aumentar dose de 25 mg para 50 mg, 2x/dia (manhã e noite)",
       "justificativa_ia": "Telemetria das últimas 50 leituras mostra 22% de batimentos irregulares com FC média de 92 bpm — acima da meta terapêutica (60–80 bpm em repouso) para controle de FA. Paciente refere palpitações aos esforços. Intensificação do beta-bloqueio é etapa lógica antes de considerar antiarrítmico de classe III.",
       "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
-      "status": "pendente",
-      "decisao": null,
-      "texto_aprovado": null
+      "status": "editado",
+      "decisao": {
+        "medico": "Dr. Robert Chase",
+        "data": "2026-06-11T18:35",
+        "observacao": null
+      },
+      "texto_aprovado": "Aumentar dose de 25 mg para 50 mg, 2x/dia (manhã e noite)"
     },
     {
       "id": "rasc_g02",
@@ -20,8 +24,12 @@
       "alteracao": "Manter dose atual (5 mg, 2x/dia). Solicitar clearance de creatinina (controle anual de DOAC)",
       "justificativa_ia": "Paciente em uso de Apixabana desde 2023-08 sem controle laboratorial registrado nos últimos 12 meses. Bula recomenda monitoramento anual de função renal em pacientes com DOAC. Sem suspeita de redução de clearance, mas controle protocolar é indicado.",
       "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
-      "status": "pendente",
-      "decisao": null,
+      "status": "aprovado",
+      "decisao": {
+        "medico": "Dr. Robert Chase",
+        "data": "2026-06-11T18:35",
+        "observacao": null
+      },
       "texto_aprovado": null
     },
     {
@@ -32,8 +40,12 @@
       "alteracao": "Aumentar dose de 50 mg para 100 mg, 1x/dia",
       "justificativa_ia": "PA registrada na última consulta (138/88 mmHg) está acima da meta terapêutica (< 130/80 em paciente com FA + HAS). Otimização do bloqueio do sistema renina-angiotensina é primeira linha antes de associar tiazídico.",
       "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
-      "status": "pendente",
-      "decisao": null,
+      "status": "aprovado",
+      "decisao": {
+        "medico": "Dr. Robert Chase",
+        "data": "2026-06-11T18:35",
+        "observacao": null
+      },
       "texto_aprovado": null
     }
   ],
