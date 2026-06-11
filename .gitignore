@@ -62,5 +62,7 @@ pacientes_csv/
 *.bak
 *.bak_*
 
-# Runtime data (anotacoes da demo, etc.) — fase 4A
-data/runtime/
+# data/runtime/ NAO esta mais gitignored — anotacoes_demo.json e
+# rascunhos_demo.json sao seeds da demo (banca precisa ver ao clonar).
+# Se demo gerar diff (medico aprovando/editando), 'git checkout -- data/runtime/'
+# antes da proxima apresentacao volta ao estado inicial.

@@ -1,0 +1,118 @@
+{
+  "GABRIEL": [
+    {
+      "id": "rasc_g01",
+      "paciente_id": "GABRIEL",
+      "data_geracao": "2026-06-05T09:15",
+      "medicamento": "Metoprolol",
+      "alteracao": "Aumentar dose de 25 mg para 50 mg, 2x/dia (manhã e noite)",
+      "justificativa_ia": "Telemetria das últimas 50 leituras mostra 22% de batimentos irregulares com FC média de 92 bpm — acima da meta terapêutica (60–80 bpm em repouso) para controle de FA. Paciente refere palpitações aos esforços. Intensificação do beta-bloqueio é etapa lógica antes de considerar antiarrítmico de classe III.",
+      "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
+      "status": "pendente",
+      "decisao": null,
+      "texto_aprovado": null
+    },
+    {
+      "id": "rasc_g02",
+      "paciente_id": "GABRIEL",
+      "data_geracao": "2026-06-03T14:20",
+      "medicamento": "Apixabana",
+      "alteracao": "Manter dose atual (5 mg, 2x/dia). Solicitar clearance de creatinina (controle anual de DOAC)",
+      "justificativa_ia": "Paciente em uso de Apixabana desde 2023-08 sem controle laboratorial registrado nos últimos 12 meses. Bula recomenda monitoramento anual de função renal em pacientes com DOAC. Sem suspeita de redução de clearance, mas controle protocolar é indicado.",
+      "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
+      "status": "pendente",
+      "decisao": null,
+      "texto_aprovado": null
+    },
+    {
+      "id": "rasc_g03",
+      "paciente_id": "GABRIEL",
+      "data_geracao": "2026-05-28T11:00",
+      "medicamento": "Losartana",
+      "alteracao": "Aumentar dose de 50 mg para 100 mg, 1x/dia",
+      "justificativa_ia": "PA registrada na última consulta (138/88 mmHg) está acima da meta terapêutica (< 130/80 em paciente com FA + HAS). Otimização do bloqueio do sistema renina-angiotensina é primeira linha antes de associar tiazídico.",
+      "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
+      "status": "pendente",
+      "decisao": null,
+      "texto_aprovado": null
+    }
+  ],
+  "LUCAS": [],
+  "MARIA": [
+    {
+      "id": "rasc_m01",
+      "paciente_id": "MARIA",
+      "data_geracao": "2026-06-06T08:30",
+      "medicamento": "Varfarina → considerar troca por Apixabana",
+      "alteracao": "Substituir Varfarina (5 mg/dia, alvo INR 2.0–3.0) por Apixabana 5 mg, 2x/dia",
+      "justificativa_ia": "Paciente idosa (67a) em uso de Varfarina há 7 anos com INR estável, porém DOACs como Apixabana têm perfil de segurança superior em idosos (menor risco de hemorragia intracraniana, sem necessidade de monitoramento de INR, sem interações alimentares). Decisão fica a critério médico considerando preferência da paciente e custo, mas guidelines recentes priorizam DOAC sobre AVK em FA não-valvar.",
+      "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
+      "status": "pendente",
+      "decisao": null,
+      "texto_aprovado": null
+    },
+    {
+      "id": "rasc_m02",
+      "paciente_id": "MARIA",
+      "data_geracao": "2026-06-02T16:45",
+      "medicamento": "Hidroclorotiazida",
+      "alteracao": "Considerar redução de 25 mg para 12,5 mg, 1x/dia",
+      "justificativa_ia": "Último exame laboratorial (2026-05-08) mostra potássio sérico em 3,4 mEq/L (limite inferior da normalidade: 3,5–5,0). Tiazídicos são causa frequente de hipocalemia em idosos. Redução de dose ou troca por outro anti-hipertensivo deve ser considerada, especialmente em paciente já anticoagulada (risco aumentado de arritmias com hipocalemia).",
+      "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
+      "status": "pendente",
+      "decisao": null,
+      "texto_aprovado": null
+    },
+    {
+      "id": "rasc_m03",
+      "paciente_id": "MARIA",
+      "data_geracao": "2026-05-25T10:15",
+      "medicamento": "Atenolol",
+      "alteracao": "Manter dose atual (50 mg, 1x/dia). Renovar prescrição por 6 meses",
+      "justificativa_ia": "Renovação protocolar de prescrição. Paciente em FA controlada com FC média 70 bpm (dentro da meta 60–80). Sem indicação de ajuste.",
+      "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
+      "status": "pendente",
+      "decisao": null,
+      "texto_aprovado": null
+    }
+  ],
+  "HELENA": [
+    {
+      "id": "rasc_h01",
+      "paciente_id": "HELENA",
+      "data_geracao": "2026-06-06T11:20",
+      "medicamento": "Atorvastatina",
+      "alteracao": "Aumentar dose de 40 mg para 80 mg, 1x/dia (à noite)",
+      "justificativa_ia": "Último perfil lipídico (2026-05-15) mostra LDL em 92 mg/dL — acima da meta terapêutica (< 70 mg/dL em paciente de alto risco cardiovascular pós-IAM). Intensificação da estatina é primeira linha. Dose de 80 mg é a máxima recomendada para atorvastatina; se LDL persistir elevado após 6–8 semanas, considerar associação com ezetimiba.",
+      "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
+      "status": "pendente",
+      "decisao": null,
+      "texto_aprovado": null
+    },
+    {
+      "id": "rasc_h02",
+      "paciente_id": "HELENA",
+      "data_geracao": "2026-06-04T09:00",
+      "medicamento": "Bisoprolol",
+      "alteracao": "Aumentar dose de 2,5 mg para 5 mg, 1x/dia (manhã)",
+      "justificativa_ia": "Telemetria das últimas 50 leituras mostra 30% de batimentos irregulares com extrassístoles ventriculares frequentes (compatível com remodelamento pós-infarto). FC média 84 bpm em repouso — beta-bloqueio sub-ótimo. Intensificação reduz mortalidade pós-IAM e diminui frequência de extrassístoles. Monitorar PA após ajuste (paciente já em Enalapril).",
+      "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
+      "status": "pendente",
+      "decisao": null,
+      "texto_aprovado": null
+    },
+    {
+      "id": "rasc_h03",
+      "paciente_id": "HELENA",
+      "data_geracao": "2026-05-30T14:30",
+      "medicamento": "Holter de 24h (exame complementar)",
+      "alteracao": "Solicitar Holter de 24h em até 2 semanas",
+      "justificativa_ia": "Embora não seja prescrição medicamentosa, alta densidade de extrassístoles na telemetria justifica caracterização eletrocardiográfica completa. Holter quantifica carga arritmica (% de ESV/dia), identifica taquicardia ventricular não-sustentada se presente, e orienta decisão sobre eventual antiarrítmico.",
+      "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
+      "status": "pendente",
+      "decisao": null,
+      "texto_aprovado": null
+    }
+  ],
+  "PEDRO": []
+}
