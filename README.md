@@ -89,7 +89,15 @@ no ChromaDB local (`chroma_db/`). Resultado: ~132 chunks em ~30 s a 1 min.
 > `all-MiniLM-L6-v2` (~80 MB, cached em `~/.cache/huggingface/`).
 > Para reindexar do zero: `python -m src.rag.indexer --force`.
 
-### 5. Rodar
+### 5. Rodar - Gerador de IBI
+
+```bash
+python simulador/gerador_ibi.py
+```
+
+Utilize para inicializar o fluxo de IBIs e arritmias gerado aleatoriamente pelo gerador de IBIs
+
+### 5.1 Rodar - Iniciar o Dashboard
 
 ```bash
 python dashboard/app.py
@@ -148,6 +156,7 @@ python main.py --smoke                                     # bateria de cenário
 | `CHROMA_PERSIST_DIR` | `./chroma_db` | Diretório de persistência do ChromaDB |
 | `LANGSMITH_API_KEY` | — (opcional) | Ativa observabilidade LangSmith |
 | `LANGSMITH_PROJECT` | `BluaDiagnostics-Sprint2` | Nome do projeto no LangSmith |
+| `API_ML_URL` | `https://api-predicaocardiaca-cpc0bufrhmd7ade4.brazilsouth-01.azurewebsites.net`| URL da API localizada em um servidor Azure |
 
 ## Testes
 
