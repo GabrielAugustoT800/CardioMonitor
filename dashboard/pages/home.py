@@ -117,10 +117,10 @@ def layout():
                 ),
                 _nav_card(
                     "MOD // 03",
-                    "Paciente Gabriel",
-                    "Prontuario PPG do paciente Gabriel renderizado "
-                    "no formato do dashboard.",
-                    "/gabriel",
+                    "Prontuario do paciente",
+                    "Prontuario clinico data-driven do paciente ativo "
+                    "(selecione no dropdown de perfil acima).",
+                    "/prontuario",
                 ),
             ]),
         ),

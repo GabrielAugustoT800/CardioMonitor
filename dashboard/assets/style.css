@@ -77,7 +77,8 @@ code, .mono {
     background: linear-gradient(180deg, var(--hud-blue-darker) 0%, var(--hud-blue-dark) 100%);
     color: #FFFFFF;
     border-bottom: 2px solid var(--hud-cyan);
-    padding: 10px 24px;
+    /* Fase 7B onda 1: padding lateral fluido. */
+    padding: 10px clamp(12px, 2vw, 24px);
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
@@ -134,6 +135,10 @@ code, .mono {
 
 .hud-topbar__telemetry {
     display: flex; gap: 18px; align-items: center;
+    /* Fase 7B onda 1: wrap defensivo — em 1366 com dropdown + SAIR + relogio,
+       pode estourar a coluna direita do grid auto/1fr/auto da topbar. */
+    flex-wrap: wrap;
+    justify-content: flex-end;
     font-family: 'JetBrains Mono', Consolas, monospace;
     font-size: 0.78rem;
 }
@@ -162,23 +167,123 @@ code, .mono {
     60%, 100% { opacity: 0.35; }
 }
 
+/* -------- topbar themes (fase 8) ---------------------------------------- */
+/* Topbar tem 3 temas: default (paciente, azul atual definido acima),
+   --login (cinza claro neutro), --medico (verde denso).
+   Variantes especificas .hud-topbar.hud-topbar--X garantem que sobrescrevem
+   a regra .hud-topbar default sem precisar de !important (mesma especifidade
+   por causa do match duplo). _aplicar_tema_topbar (app.py) muda a className
+   conforme papel-ativo + pathname. */
+
+/* === TEMA LOGIN (cinza claro neutro) === */
+.hud-topbar.hud-topbar--login {
+    background: #F5F7FA;
+    color: #1A2333;
+    border-bottom: 1px solid #D5DCE5;
+}
+.hud-topbar--login .hud-topbar__brand {
+    color: #1A2333;
+}
+.hud-topbar--login .hud-topbar__brand .mark {
+    background: #0A4DA2;
+    color: #FFFFFF;
+}
+.hud-topbar--login .hud-topbar__brand small {
+    color: rgba(26, 35, 51, 0.7);
+}
+.hud-topbar--login .hud-topbar__nav a {
+    color: rgba(26, 35, 51, 0.78) !important;
+}
+.hud-topbar--login .hud-topbar__nav a:hover {
+    color: #1A2333 !important;
+    background: rgba(10, 77, 162, 0.08);
+    border-bottom-color: rgba(10, 77, 162, 0.5);
+}
+.hud-topbar--login .hud-topbar__nav a.active {
+    color: #0A4DA2 !important;
+    background: rgba(10, 77, 162, 0.12);
+    border-bottom-color: #0A4DA2;
+}
+.hud-topbar--login .hud-topbar__telemetry .tel {
+    color: rgba(26, 35, 51, 0.85);
+}
+.hud-topbar--login .hud-topbar__telemetry .tel .lbl {
+    color: rgba(26, 35, 51, 0.55);
+}
+.hud-topbar--login .hud-topbar__telemetry .tel .val {
+    color: #1A2333;
+}
+.hud-topbar--login .hud-btn--ghost {
+    color: #0A4DA2;
+    border-color: rgba(10, 77, 162, 0.45);
+}
+.hud-topbar--login .hud-btn--ghost:hover {
+    background: rgba(10, 77, 162, 0.08);
+    border-color: #0A4DA2;
+    color: #073E82;
+}
+
+/* === TEMA MEDICO (verde denso #0F7B5C, accent SUCCESS #1FAE6F) === */
+.hud-topbar.hud-topbar--medico {
+    background: #0F7B5C;
+    border-bottom: 2px solid var(--hud-success);
+}
+.hud-topbar--medico .hud-topbar__brand .mark {
+    background: var(--hud-success);
+    color: #FFFFFF;
+}
+.hud-topbar--medico .hud-topbar__nav a:hover {
+    color: #FFFFFF !important;
+    background: rgba(31, 174, 111, 0.18);
+    border-bottom-color: rgba(31, 174, 111, 0.7);
+}
+.hud-topbar--medico .hud-topbar__nav a.active {
+    color: #FFFFFF !important;
+    background: rgba(31, 174, 111, 0.28);
+    border-bottom-color: var(--hud-success);
+}
+.hud-topbar--medico .hud-btn--ghost {
+    color: #FFFFFF;
+    border-color: rgba(255, 255, 255, 0.45);
+}
+.hud-topbar--medico .hud-btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #FFFFFF;
+    color: #FFFFFF;
+}
+/* Badge ALERTAS no tema medico: fundo branco com numero verde — destaca
+   contra a topbar verde sem competir com o accent SUCCESS. */
+.hud-topbar--medico .hud-nav-link span[style*="background"] {
+    background: #FFFFFF !important;
+    color: #0F7B5C !important;
+}
+
 /* -------- page container ------------------------------------------------ */
 
 .hud-page {
     max-width: 1440px;
     width: 100%;
     margin: 0 auto;
-    padding: 22px 24px 48px;
+    /* Fase 7B onda 1: padding lateral fluido pra 1366-1920px. Antes 24px fixo
+       deixava conteudo colado nas bordas em laptops 1366. clamp escala
+       gradualmente entre 12px (extremo) e 24px (desktop largo). */
+    padding: 18px clamp(12px, 2vw, 24px) 36px;
 }
 
 /* -------- hero strip ---------------------------------------------------- */
 
 .hud-hero {
     position: relative;
+    /* Fase 8.2: cor unica teal escuro #0F3D4F (substitui o gradient azul
+       anterior). Teal esta entre azul e verde na roda de cor — combina com
+       o tema paciente (topbar azul navy) E com o tema medico (topbar verde
+       denso) sem chocar com nenhum dos dois. Gradient mantido em 3 paradas
+       de teal pra preservar o efeito de profundidade do hero. */
     background: linear-gradient(130deg,
-        var(--hud-blue-darker) 0%, var(--hud-blue) 50%, var(--hud-cyan-deep) 100%);
+        #0A2E3D 0%, #0F3D4F 50%, #134B5E 100%);
     color: #FFFFFF;
-    padding: 26px 32px;
+    /* Fase 7B onda 1: padding fluido. 26px/32px fixo era pesado em 1366. */
+    padding: 22px clamp(16px, 2.5vw, 32px);
     margin-bottom: 20px;
     border-left: 4px solid var(--hud-cyan);
     clip-path: polygon(
@@ -393,6 +498,18 @@ code, .mono {
 .span-8 { grid-column: span 8; }
 .span-12 { grid-column: span 12; }
 
+/* Fase 7B onda 1: range de laptops comuns (1280-1440px). As @media abaixo
+   cobriam 1100 e 720, deixando laptops 1366 sem ajuste explicito. Aqui
+   apertamos paddings e o hero pra ganhar largura util. */
+@media (max-width: 1440px) {
+    .hud-page {
+        padding-left: clamp(8px, 1.5vw, 24px);
+        padding-right: clamp(8px, 1.5vw, 24px);
+    }
+    .hud-hero {
+        padding: 20px 24px;
+    }
+}
 @media (max-width: 1100px) {
     .grid-4, .grid-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -409,7 +526,9 @@ code, .mono {
 }
 .hud-controls .field {
     display: flex; flex-direction: column; gap: 4px;
-    min-width: 160px;
+    /* Fase 7B onda 1: tolerante a containers estreitos. min(160px, 100%)
+       degrada elegante quando o pai e menor que 160px. */
+    min-width: min(160px, 100%);
 }
 .hud-controls .field label {
     color: var(--hud-muted);
@@ -589,6 +708,10 @@ input.dash-input, input[type="number"], input[type="text"] {
 /* -------- footer -------------------------------------------------------- */
 
 .hud-footer {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
     background: var(--hud-bg-alt);
     border-top: 1px solid var(--hud-border);
     padding: 12px 24px;
@@ -596,7 +719,8 @@ input.dash-input, input[type="number"], input[type="text"] {
     font-size: 0.76rem;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.06em;
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: center; align-items: center;
+    gap: 16px; flex-wrap: wrap; text-align: center;
 }
 
 /* -------- patient header card ------------------------------------------- */

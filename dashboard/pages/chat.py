@@ -92,18 +92,18 @@ print("[dash_app] Grafo pronto.")
 # reinicialização do app. Refresh em runtime (criar perfil via chatbot
 # ou UI/J.1) precisaria callback dinâmico — fora do escopo do J.7.
 def _format_label(p: dict) -> str:
-    nome = p.get("nome") or (
-        "Meu Perfil" if p["id"] == "MEU_PERFIL" else f"Perfil {p['id']}"
-    )
+    nome = p.get("nome") or f"Perfil {p['id']}"
     idade = p.get("idade")
     return f"{nome} — {idade}a" if idade is not None else nome
 
 
 def _eh_perfil_visivel(p: dict) -> bool:
     pid = p["id"]
+    # Os 5 pacientes da clínica do Dr. Robert Chase + perfis criados via
+    # chatbot (BENEF-NEW-*). MEU_PERFIL (id antigo) foi renomeado pra LUCAS
+    # na fundação. Maria/Helena/Pedro/Lucas agora aparecem no dropdown.
     return (
-        pid == "GABRIEL"
-        or pid == "MEU_PERFIL"
+        pid in {"GABRIEL", "LUCAS", "MARIA", "HELENA", "PEDRO"}
         or pid.startswith("BENEF-NEW-")
     )
 
@@ -155,10 +155,10 @@ def patient_card(perfil_id: str):
     perfil = get_patient(perfil_id) if perfil_id else None
 
     if not perfil or not perfil.get("nome"):
-        # MEU_PERFIL não preenchido ou perfil inexistente
+        # Perfil inexistente — selecionar outro paciente no dropdown topbar.
         iniciais = "??"
-        nome = "Perfil não preenchido"
-        meta = "Crie em /meu-perfil"
+        nome = "Perfil não encontrado"
+        meta = "Selecione um paciente no dropdown acima"
         condicoes = "—"
     else:
         nome = perfil["nome"]
@@ -274,14 +274,21 @@ layout = html.Div([
     html.Audio(id="audio-alert", src="/assets/alert.wav",
                className="blua-audio-alert", autoPlay=False),
 
-    # J.4 — trigger de rehidratação. Dispara 1x após o layout montar
-    # (max_intervals=1) e força o callback _rehidratar_chat_area a popular
-    # chat-area com mensagens do session-data. Usar Interval em vez de
-    # Input(hud-url.pathname) porque o page_container do Dash multi-pages
-    # re-renderiza o layout DEPOIS dos callbacks que escutam pathname,
-    # sobrescrevendo o output. Interval só dispara quando o componente
-    # JÁ está montado, garantindo que o output sobrevive.
-    
+    # Rehidratação do chat (fase 7a fix 2/2): dcc.Interval com max_intervals=1
+    # dispara 1x ~300ms apos o mount. Adicionado como Input do
+    # _rehidratar_chat_area pra rehidratar quando o usuario VOLTA pra /chat
+    # (paciente continua o mesmo -> dropdown.value nao muda -> callback nao
+    # disparava com gatilho antigo). Interval existe DENTRO do layout do
+    # chat -> par garantido com chat-area, sem race com page_container do
+    # multi-pages (problema documentado na Lote 2). Diferente do
+    # 'chat-rehidratar-tick' fantasma removido na Lote 2 etapa 3 — aquele
+    # nao existia no layout; ESTE existe.
+    dcc.Interval(
+        id="chat-mount-trigger",
+        interval=300,
+        max_intervals=1,
+    ),
+
     # Session storage — Passo 8.5: movido para o layout global do
     # app/unified_app.py com storage_type="session" (preserva conversa
     # entre páginas, reseta ao fechar a aba). Callbacks abaixo continuam
@@ -382,12 +389,9 @@ layout = html.Div([
 
         ], className="grid grid-12col", style={"marginTop": "16px"}),
 
-        # Footer
-        html.Div([
-            html.Span(f"BluaDiagnostics Sprint 2 · Backend: {BACKEND_ATUAL.upper()} · "
-                      f"Modelo: {MODELO_ATUAL}"),
-            html.Span("⚕️ Este sistema não substitui avaliação médica · Em emergência: SAMU 192"),
-        ], className="hud-footer", style={"marginTop": "24px"}),
+        # Footer REMOVIDO (lote 2 etapa 1): o footer global em dashboard/app.py
+        # já mostra o disclaimer clínico em todas as rotas. Manter aqui criava
+        # barra duplicada + texto de dev (Sprint 2 / Backend / Modelo) no /chat.
 
     ], className="hud-page"),
 
@@ -474,6 +478,31 @@ def _refresh_chat_dropdown_options(pathname):
     ]
 
 
+def _garantir_perfil(sessao, paciente_id):
+    """Garante session-data segmentado e retorna (sessao, perfil, thread_id).
+
+    Estrutura nova (lote 2 etapa 2): session-data = {cliente_id, perfis: {...}}.
+    - cliente_id gerado LAZY no 1o uso (resolve uuid-no-import: por navegador).
+    - compartimento do paciente criado sob demanda.
+    - thread_id do grafo = "<cliente_id>::<paciente_id>" — isolamento total no
+      MemorySaver (nem cross-talk entre clientes, nem entre pacientes).
+    """
+    if not sessao or not isinstance(sessao, dict):
+        sessao = {"cliente_id": None, "perfis": {}}
+    if not sessao.get("cliente_id"):
+        sessao["cliente_id"] = str(uuid.uuid4())
+    sessao.setdefault("perfis", {})
+    if paciente_id not in sessao["perfis"]:
+        sessao["perfis"][paciente_id] = {
+            "mensagens": [],
+            "flags_safety_anteriores": [],
+            "ultimo_estado": None,
+        }
+    perfil = sessao["perfis"][paciente_id]
+    thread_id = f"{sessao['cliente_id']}::{paciente_id}"
+    return sessao, perfil, thread_id
+
+
 @callback(
     Output("session-data", "data"),
     # chat-area e user-input.value tem allow_duplicate=True porque tambem
@@ -500,19 +529,41 @@ def _refresh_chat_dropdown_options(pathname):
 )
 def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
                        mensagem, beneficiario, sessao):
+    # Guard contra disparo espurio em re-mount de pagina (fase 7a):
+    # quando o /chat e remontado (apos sair e voltar via nav), os botoes
+    # (btn-enviar, btn-nova-sessao, btn-hitl-*) e o user-input renascem com
+    # n_clicks=0 / n_submit=0. Dash considera isso uma "mudanca de Input"
+    # e dispara o callback, com ctx.triggered_id arbitrariamente apontando
+    # pra btn-nova-sessao. O branch de reset executava, zerava
+    # sessao["perfis"][pid]["mensagens"] e escrevia "Nova sessao iniciada."
+    # — fazia a mensagem do usuario sumir.
+    #
+    # prevent_initial_call=True NAO impede esse disparo (so impede na carga
+    # inicial da APP, nao em re-mount de componentes).
+    #
+    # Fix: se TODOS os contadores de interacao sao falsos (0/None), o
+    # callback nao foi disparado por clique/Enter real — ignora.
+    if not (n_enviar or n_submit or n_nova or n_aprovar or n_rejeitar):
+        return (no_update,) * 11
+
     trig = ctx.triggered_id
+
+    # Resolve o compartimento do paciente ativo (segmentado por paciente).
+    beneficiario = beneficiario or "GABRIEL"
+    sessao, perfil, thread_id = _garantir_perfil(sessao, beneficiario)
 
     # Reset de sessão — limpa só a UI, MANTÉM thread_id (contexto LangGraph
     # preservado). Útil pra demo: apresentador limpa a tela visualmente sem
     # perder o fio da conversa que o chatbot já tem internamente.
     if trig == "btn-nova-sessao":
-        nova_sessao = {
-            "thread_id": sessao["thread_id"],  # preserva contexto do grafo
+        # Zera SÓ o compartimento do paciente ativo — preserva os outros
+        # pacientes. cliente_id estável (mesmo thread base no grafo).
+        sessao["perfis"][beneficiario] = {
             "mensagens": [],
             "flags_safety_anteriores": [],
             "ultimo_estado": None,
         }
-        return (nova_sessao,
+        return (sessao,
                 [html.Div("Nova sessão iniciada.", className="hud-info",
                            style={"alignSelf": "center"})],
                 "—", "—", "—", "—", "—", "—",
@@ -525,7 +576,7 @@ def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
         try:
             estado = aprovar_rascunho_prescricao(
                 grafo=GRAFO,
-                thread_id=sessao["thread_id"],
+                thread_id=thread_id,  # composto: cliente_id::paciente_id
                 aprovado=aprovado,
             )
         except Exception as exc:
@@ -547,9 +598,9 @@ def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
             estado = executar_turno(
                 grafo=GRAFO,
                 mensagem_usuario=mensagem,
-                thread_id=sessao["thread_id"],
+                thread_id=thread_id,  # composto: cliente_id::paciente_id
                 beneficiario_id=beneficiario,
-                flags_safety_anteriores=sessao.get("flags_safety_anteriores", []),
+                flags_safety_anteriores=perfil.get("flags_safety_anteriores", []),
             )
         except Exception as exc:
             print(f"[dash_app] Erro: {exc}")
@@ -565,11 +616,11 @@ def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
                      or estado.get("agente_ativo") == "escalada_humana"
                      or "192" in resposta_final)
 
-    sessao["mensagens"].append({"role": "user", "content": mensagem})
-    sessao["mensagens"].append({"role": "assistant", "content": resposta_final,
+    perfil["mensagens"].append({"role": "user", "content": mensagem})
+    perfil["mensagens"].append({"role": "assistant", "content": resposta_final,
                                   "emergencia": eh_emergencia})
-    sessao["flags_safety_anteriores"] = flags
-    sessao["ultimo_estado"] = {
+    perfil["flags_safety_anteriores"] = flags
+    perfil["ultimo_estado"] = {
         "intent": estado.get("intent_classificada"),
         "confianca_intent": estado.get("confianca_intent"),
         "agente_ativo": estado.get("agente_ativo"),
@@ -582,15 +633,15 @@ def processar_mensagem(n_enviar, n_submit, n_nova, n_aprovar, n_rejeitar,
         "requer_aprovacao_humana": estado.get("requer_aprovacao_humana", False),
     }
 
-    # Renderizar chat
+    # Renderizar chat — bolhas do paciente ativo
     chat_children = [
         chat_bubble(m["role"], m["content"],
                     emergencia=m.get("emergencia", False))
-        for m in sessao["mensagens"]
+        for m in perfil["mensagens"]
     ]
 
     # Painel técnico
-    ult = sessao["ultimo_estado"]
+    ult = perfil["ultimo_estado"]
 
     confidence_view = confidence_badge(ult["confidence_nivel"],
                                         ult["confidence_score"] or 0)
@@ -715,44 +766,51 @@ clientside_callback(
 
 
 # =============================================================================
-# J.4 — Rehidratação de chat-area ao re-entrar em /chat
+# Rehidratação do chat-area por paciente (lote 2, etapa 3)
 # =============================================================================
-# Bug: o layout do /chat é estático (children de chat-area hardcoded com
-# "Olá! Sou o BluaDiagnostics..."). Cada navegação pra /chat re-renderiza
-# o layout inicial, sobrescrevendo o histórico de bolhas. Session-data
-# (Store global) preserva as mensagens mas a UI não as exibe.
+# Gatilho: Input("beneficiario-select", "value"). Cobre os 2 casos:
+#   1. Troca de paciente no dropdown → mostra as bolhas daquele paciente
+#   2. Re-montagem da página (re-entrada em /chat) → o dropdown é recriado e
+#      emite seu value, disparando o callback DEPOIS do componente montar
+#      (evita o race do pathname que o blua-cardio TURBO sofreu — lá o
+#      page_container re-renderizava o layout DEPOIS dos callbacks de pathname).
 #
-# Fix: callback dispara em mudança de pathname; quando pathname == "/chat",
-# lê session-data.mensagens e re-renderiza bolhas via chat_bubble().
+# Fonte da verdade do paciente ativo = perfil-ativo Store, NÃO o dropdown
+# value. Na re-montagem o dropdown nasce com value="GABRIEL" e só depois o
+# _sync_chat_dropdown_from_store corrige pro paciente real — ler do Store
+# evita piscar Gabriel→Maria.
 #
-# Escopo: rehidrata apenas chat-area (mensagens). Painéis técnicos
-# (confidence/trajetória/RAG/tools/safety) voltam pra "—" ao re-entrar —
-# o histórico das mensagens é o que importa pro usuário; painéis populam
-# de novo no próximo turno do chatbot. Trade-off de simplicidade.
-
-
+# session-data como State (não Input) → não cascateia com envio de mensagem
+# (que já escreve chat-area via processar_mensagem + optimistic UI).
 @callback(
     Output("chat-area", "children", allow_duplicate=True),
-    Input("chat-rehidratar-tick", "n_intervals"),
+    Input("beneficiario-select", "value"),
+    # Fix 7A.3: trigger adicional pra rodar no mount da pagina. O Input(value)
+    # do dropdown nao muda quando o usuario volta pra /chat com o mesmo
+    # paciente — sem este Interval, callback nao disparava e chat-area ficava
+    # com a saudacao inicial hardcoded.
+    Input("chat-mount-trigger", "n_intervals"),
     State("session-data", "data"),
+    State("perfil-ativo", "data"),
     prevent_initial_call=True,
 )
-def _rehidratar_chat_area(_n_intervals, sessao):
-    """Repopula chat-area.children a partir de session-data.mensagens
-    quando o layout do /chat termina de montar. Sem isso, mensagens
-    enviadas antes de sair da página somem visualmente ao voltar.
+def _rehidratar_chat_area(_dropdown_value, _mount_trigger, sessao, perfil_ativo):
+    """Rehidrata chat-area com as mensagens do paciente ativo.
 
-    Trigger via dcc.Interval em vez de Input(hud-url.pathname) porque
-    o page_container do Dash multi-pages re-renderiza o layout DEPOIS
-    dos callbacks que escutam pathname, sobrescrevendo o output."""
-    if not sessao or not sessao.get("mensagens"):
-        # Primeira visita ou sessão zerada — mantém o "Olá" inicial
-        return no_update
-    # Re-renderiza histórico
+    Retorna [] (chat vazio) quando o paciente não tem conversa ainda —
+    necessário pra LIMPAR as bolhas ao trocar pra um paciente sem histórico.
+
+    Gatilhos:
+    - beneficiario-select.value: dispara ao trocar de paciente no dropdown.
+    - chat-mount-trigger.n_intervals: dispara 1x ao montar /chat (fix 7A.3).
+    """
+    paciente_id = (perfil_ativo or {}).get("id") or "GABRIEL"
+    perfil = (sessao or {}).get("perfis", {}).get(paciente_id)
+    if not perfil or not perfil.get("mensagens"):
+        return []
     return [
-        chat_bubble(m["role"], m["content"],
-                    emergencia=m.get("emergencia", False))
-        for m in sessao["mensagens"]
+        chat_bubble(m["role"], m["content"], emergencia=m.get("emergencia", False))
+        for m in perfil["mensagens"]
     ]
 
 

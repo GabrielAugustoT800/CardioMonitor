@@ -80,13 +80,41 @@ GABRIEL_CSV: Path = Path(
     )
 )
 
-# Dataset saudável demonstrativo do MEU_PERFIL (200 batimentos, BPM 65-76,
-# zero anômalos, 100% regular). Cria contraste de demo com gabriel_data.csv
-# (FA paroxística). J.2 — Fase J.
-# Override via BLUA_MEU_PERFIL_CSV — análogo a BLUA_GABRIEL_CSV.
-MEU_PERFIL_CSV: Path = Path(
+# Dataset saudável demonstrativo (200 batimentos, BPM 65-76, zero anômalos,
+# 100% regular). Originalmente "MEU_PERFIL", renomeado pra LUCAS na fundação
+# do app médico (paciente Lucas Andrade da clínica do Dr. Chase).
+# Override via BLUA_LUCAS_CSV — análogo a BLUA_GABRIEL_CSV.
+LUCAS_CSV: Path = Path(
     os.environ.get(
-        "BLUA_MEU_PERFIL_CSV",
-        str(DASHBOARD_DATA_DIR / "meu_perfil_data.csv"),
+        "BLUA_LUCAS_CSV",
+        str(DASHBOARD_DATA_DIR / "lucas_data.csv"),
+    )
+)
+
+# Alias temporário: MEU_PERFIL_CSV aponta pro mesmo arquivo do LUCAS_CSV.
+# Mantido pra não quebrar imports existentes (meu_perfil.py, telemetry_store.py)
+# até a refatoração do dropdown unificado limpar as referências ao id morto
+# MEU_PERFIL. Ver pendência registrada no commit deste fix.
+MEU_PERFIL_CSV: Path = LUCAS_CSV
+
+# Datasets dos pacientes da clínica do Dr. Robert Chase (fase fundação do
+# app médico). Padrão idêntico aos CSVs anteriores: override via env var,
+# default em dashboard/data/.
+MARIA_CSV: Path = Path(
+    os.environ.get(
+        "BLUA_MARIA_CSV",
+        str(DASHBOARD_DATA_DIR / "maria_data.csv"),
+    )
+)
+HELENA_CSV: Path = Path(
+    os.environ.get(
+        "BLUA_HELENA_CSV",
+        str(DASHBOARD_DATA_DIR / "helena_data.csv"),
+    )
+)
+PEDRO_CSV: Path = Path(
+    os.environ.get(
+        "BLUA_PEDRO_CSV",
+        str(DASHBOARD_DATA_DIR / "pedro_data.csv"),
     )
 )

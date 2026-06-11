@@ -15,6 +15,7 @@ Camada 2 — Auditor LLM (apenas em casos ambíguos):
 from __future__ import annotations
 
 import json
+import os
 import re
 
 # Padrões para detecção
@@ -221,8 +222,15 @@ def agente_safety(
         flags.append("DISCLAIMER_ADICIONADO")
 
     # --- Camada 2: Auditor LLM (só em casos ambíguos) ---------------------
+    # Opt-out via BLUA_SAFETY_AUDITOR=disabled (-1 a -2s quando dispara em
+    # caso ambíguo). Default "enabled" preserva camada 2 em produção. Camada 1
+    # (heurística: red flag, diagnóstico definitivo, tag inviolável, disclaimer)
+    # continua ATIVA mesmo com auditor desligado.
     auditor_resultado = None
-    if _eh_caso_ambiguo(flags, resposta_agente, mensagem_usuario):
+    auditor_habilitado = (
+        os.getenv("BLUA_SAFETY_AUDITOR", "enabled").lower() == "enabled"
+    )
+    if auditor_habilitado and _eh_caso_ambiguo(flags, resposta_agente, mensagem_usuario):
         auditor_resultado = _auditor_llm(mensagem_usuario, resposta_agente, intent)
         flags.append("AUDITOR_LLM_ACIONADO")
 

@@ -43,9 +43,15 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 DEFAULT_CSV = DATA_DIR / "cardiac_data.csv"
 GABRIEL_CSV = DATA_DIR / "gabriel_data.csv"
-# J.2 INTEGRATION: dataset saudável demonstrativo do MEU_PERFIL.
-# Contraste com gabriel_data.csv (FA paroxística) — usado em meu_perfil.py.
-MEU_PERFIL_CSV = DATA_DIR / "meu_perfil_data.csv"
+# Dataset saudável demonstrativo. Ex-MEU_PERFIL, renomeado pra LUCAS na
+# fundação do app médico. Contraste com gabriel_data.csv (FA paroxística).
+LUCAS_CSV = DATA_DIR / "lucas_data.csv"
+# Alias temporário até refatoração do dropdown limpar o id morto MEU_PERFIL.
+MEU_PERFIL_CSV = LUCAS_CSV
+# Pacientes adicionais da clínica do Dr. Robert Chase (fase fundação).
+MARIA_CSV = DATA_DIR / "maria_data.csv"
+HELENA_CSV = DATA_DIR / "helena_data.csv"
+PEDRO_CSV = DATA_DIR / "pedro_data.csv"
 
 # --- Azure Blob ---
 AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")

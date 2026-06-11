@@ -53,3 +53,16 @@ _backup_sprint2/
 # (dado dinâmico — apenas estrutura é versionada via .gitkeep)
 data/consultas/*
 !data/consultas/.gitkeep
+
+# Pasta temporária de mocks (fonte original — já integrada em
+# data/mocks/ e dashboard/data/). Não versionar pra não duplicar.
+pacientes_csv/
+
+# Backups locais (ex: perfis_clinicos.json.bak_2pacientes)
+*.bak
+*.bak_*
+
+# data/runtime/ NAO esta mais gitignored — anotacoes_demo.json e
+# rascunhos_demo.json sao seeds da demo (banca precisa ver ao clonar).
+# Se demo gerar diff (medico aprovando/editando), 'git checkout -- data/runtime/'
+# antes da proxima apresentacao volta ao estado inicial.
