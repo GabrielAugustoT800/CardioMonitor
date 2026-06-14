@@ -15,7 +15,7 @@ role='medico' no register_page: só aparece no nav quando papel-ativo = medico.
 from __future__ import annotations
 
 import dash
-from dash import html, callback, Input, Output, ALL, ctx, no_update
+from dash import html, callback, Input, Output, ALL, ctx, no_update, dcc, State
 
 from shared.patient_registry import list_patients
 from utils.storage import load_csv
@@ -174,13 +174,56 @@ def layout(**kwargs):
                 "Ordenados por risco. Clique no card para abrir o prontuário."
             ),
         ]),
+        # ── BARRA DE PESQUISA ───────────────────────────────────────────
+        html.Div([
+            dcc.Input(
+                id="caseload-search",
+                type="text",
+                placeholder="Buscar paciente...",
+                debounce=False,
+                style={
+                    "width": "100%",
+                    "padding": "10px 14px",
+                    "background": "transparent",
+                    "border": f"1px solid {TEXT_MUTED}40",
+                    "borderRadius": "4px",
+                    "color": TEXT_DARK,
+                    "fontFamily": "JetBrains Mono, Consolas, monospace",
+                    "fontSize": "0.82rem",
+                    "letterSpacing": "0.06em",
+                    "outline": "none",
+                },
+                autoComplete="off",
+            ),
+            html.Div(id="caseload-count", style={
+                "fontSize": "0.74rem",
+                "color": TEXT_MUTED,
+                "letterSpacing": "0.08em",
+                "marginTop": "6px",
+                "textAlign": "right",
+            }),
+        ], style={"maxWidth": "880px", "margin": "0 auto 16px"}),
+        # ────────────────────────────────────────────────────────────────
+
         html.Div(
-            [_card_paciente(p, df, cor, justif)
-             for p, df, cor, justif in enriquecidos],
+            id="caseload-lista",
+            children=[_card_paciente(p, df, cor, justif)
+                      for p, df, cor, justif in enriquecidos],
             style={"maxWidth": "880px", "margin": "0 auto"},
         ),
-    ])
 
+        # Guarda a lista completa pro callback de busca
+        dcc.Store(id="caseload-store", data=[
+            {
+                "paciente": p,
+                "cor": cor,
+                "justif": justif,
+                "condicao": _condicao_principal(p),
+                "metrica": _metrica_chave(df),
+            }
+            for p, df, cor, justif in enriquecidos
+        ]),
+    ])
 
 @callback(
     # Trinca de Outputs com allow_duplicate (os 3 ja sao escritos noutros
@@ -212,3 +255,42 @@ def _abrir_paciente(n_clicks_list):
 
     # Escreve perfil-ativo + força papel=medico + navega.
     return {"id": pid}, {"role": "medico"}, "/prontuario"
+
+# Callback 2 — filtro da barra de pesquisa
+@callback(
+    Output("caseload-lista", "children"),
+    Output("caseload-count", "children"),
+    Input("caseload-search", "value"),
+    State("caseload-store", "data"),
+    prevent_initial_call=True,
+)
+def _filtrar_pacientes(query, dados):
+    """Filtra cards pelo nome do paciente em tempo real."""
+    from dash import no_update
+
+    q = (query or "").strip().lower()
+
+    filtrados = [
+        d for d in (dados or [])
+        if q in d["paciente"].get("nome", "").lower()
+    ] if q else dados or []
+
+    total = len(dados or [])
+    contagem = f"{len(filtrados)} de {total} paciente{'s' if total != 1 else ''}"
+
+    if not filtrados:
+        cards = [html.Div(
+            "Nenhum paciente encontrado.",
+            style={"color": TEXT_MUTED, "fontFamily": "JetBrains Mono, Consolas, monospace",
+                   "fontSize": "0.82rem", "textAlign": "center", "padding": "32px 0"}
+        )]
+    else:
+        cards = []
+        for d in filtrados:
+            p = d["paciente"]
+            pid = p["id"]
+            csv_path = csv_do_paciente(pid)
+            df = load_csv(csv_path) if csv_path and csv_path.exists() else None
+            cards.append(_card_paciente(p, df, d["cor"], d["justif"]))
+
+    return cards, contagem
