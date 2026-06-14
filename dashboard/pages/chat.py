@@ -719,7 +719,7 @@ clientside_callback(
         if (!msg || !msg.trim()) {
             return [window.dash_clientside.no_update, window.dash_clientside.no_update];
         }
-        // Construir o balao de usuario no mesmo formato do chat_bubble Python
+
         const bolhaUser = {
             namespace: 'dash_html_components',
             type: 'Div',
@@ -733,26 +733,43 @@ clientside_callback(
                 ]
             }
         };
-        // Bolha placeholder "Pensando..." enquanto o servidor processa
+
         const bolhaPensando = {
             namespace: 'dash_html_components',
             type: 'Div',
             props: {
-                className: 'blua-bubble blua-bubble--assistant',
-                style: {opacity: 0.6, fontStyle: 'italic'},
+                className: 'blua-bubble blua-bubble--assistant blua-bubble--thinking',
                 children: [
                     {namespace: 'dash_html_components', type: 'Div',
                      props: {className: 'blua-bubble__role', children: 'BLUA'}},
                     {namespace: 'dash_html_components', type: 'Div',
-                     props: {style: {margin: 0, color: 'inherit'},
-                             children: 'Analisando seu caso…'}}
+                     props: {
+                         className: 'blua-thinking-dots',
+                         children: [
+                             {namespace: 'dash_html_components', type: 'Span',
+                              props: {className: 'blua-thinking-dots__dot'}},
+                             {namespace: 'dash_html_components', type: 'Span',
+                              props: {className: 'blua-thinking-dots__dot'}},
+                             {namespace: 'dash_html_components', type: 'Span',
+                              props: {className: 'blua-thinking-dots__dot'}},
+                         ]
+                     }}
                 ]
             }
         };
+
         const novoChildren = Array.isArray(currentChildren)
             ? currentChildren.concat([bolhaUser, bolhaPensando])
             : [bolhaUser, bolhaPensando];
-        return [novoChildren, ''];  // limpa o input
+
+        setTimeout(function() {
+            const chatArea = document.getElementById('chat-area');
+            if (chatArea) {
+                chatArea.scrollTo({top: chatArea.scrollHeight, behavior: 'smooth'});
+            }
+        }, 50);
+
+        return [novoChildren, ''];
     }
     """,
     Output("chat-area", "children", allow_duplicate=True),
