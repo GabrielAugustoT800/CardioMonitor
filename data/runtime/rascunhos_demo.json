@@ -83,9 +83,13 @@
       "alteracao": "Manter dose atual (50 mg, 1x/dia). Renovar prescrição por 6 meses",
       "justificativa_ia": "Renovação protocolar de prescrição. Paciente em FA controlada com FC média 70 bpm (dentro da meta 60–80). Sem indicação de ajuste.",
       "tag_inviolavel": "[RASCUNHO_AGUARDANDO_REVISAO_MEDICA]",
-      "status": "pendente",
-      "decisao": null,
-      "texto_aprovado": null
+      "status": "editado",
+      "decisao": {
+        "medico": "Dr. Robert Chase",
+        "data": "2026-06-15T16:40",
+        "observacao": null
+      },
+      "texto_aprovado": "Manter dose atual (50 mg, 1x/dia). Renovar prescrição por 5 meses"
     }
   ],
   "HELENA": [
