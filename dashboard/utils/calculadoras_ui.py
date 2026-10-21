@@ -53,13 +53,30 @@ def _label_field(texto: str) -> html.Label:
     })
 
 
-def _card_calc(titulo: str, ref: str, conteudo, btn_id: str,
-               resultado_id: str) -> html.Div:
+def _card_calc(titulo: str, ref: str, descricao: str, conteudo, btn_id: str,
+               resultado_id: str, ref_url: str = "") -> html.Div:
+    rodape = []
+    if ref_url:
+        rodape = [html.A(
+            f"Ref: {ref}",
+            href=ref_url,
+            target="_blank",
+            style={
+                "color": TEXT_MUTED,
+                "fontSize": "0.74rem",
+                "fontFamily": "JetBrains Mono, Consolas, monospace",
+                "textDecoration": "none",
+                "borderBottom": f"1px dotted {TEXT_MUTED}",
+                "marginTop": "10px",
+                "display": "inline-block",
+            },
+        )]
+
     return html.Div([
         html.H3(titulo, style={
             "color": TEXT_DARK, "marginBottom": "4px", "fontSize": "1.05rem",
         }),
-        html.P(ref, style={
+        html.P(descricao, style={
             "color": TEXT_MUTED, "fontSize": "0.78rem",
             "marginBottom": "12px",
         }),
@@ -69,13 +86,13 @@ def _card_calc(titulo: str, ref: str, conteudo, btn_id: str,
                     style={"marginTop": "8px", "background": SUCCESS,
                            "borderColor": SUCCESS}),
         html.Div(id=resultado_id, style={"marginTop": "10px"}),
+        *rodape,
     ], style={
         "padding": "16px 18px", "marginBottom": "14px",
         "background": "rgba(0,0,0,0.02)",
         "border": f"1px solid {BORDER}",
         "borderRadius": "6px",
     })
-
 
 def _render_calculadoras_ui(prefixo: str = "rota-",
                              paciente: dict | None = None) -> html.Div:
@@ -145,10 +162,12 @@ def _render_calculadoras_ui(prefixo: str = "rota-",
     ]
     cha_card = _card_calc(
         "CHA₂DS₂-VASc",
-        "Risco de AVC em FA não-valvar. Ref: ESC 2024.",
+        "ESC 2024 / Lip et al. Chest 2010",
+        "Risco de AVC em FA não-valvar.",
         cha_conteudo,
         btn_id=f"{prefixo}cha-btn",
         resultado_id=f"{prefixo}cha-resultado",
+        ref_url="https://doi.org/10.1378/chest.09-1584",
     )
 
     hb_pre = (["e"] if pre_idade > 65 else []) + (["s"] if pre_avc else [])
@@ -176,10 +195,12 @@ def _render_calculadoras_ui(prefixo: str = "rota-",
     ]
     hb_card = _card_calc(
         "HAS-BLED",
-        "Risco de sangramento maior em anticoagulados. Ref: ESC 2024.",
+        "ESC 2024 / Pisters et al. Chest 2010",
+        "Risco de sangramento maior em anticoagulados.",
         hb_conteudo,
         btn_id=f"{prefixo}hb-btn",
         resultado_id=f"{prefixo}hb-resultado",
+        ref_url="https://doi.org/10.1378/chest.10-0134",
     )
 
     pre_idade_egfr = pre_idade if pre_idade >= 18 else 30
@@ -210,10 +231,12 @@ def _render_calculadoras_ui(prefixo: str = "rota-",
     ]
     egfr_card = _card_calc(
         "eGFR (CKD-EPI 2021)",
-        "Taxa de filtração glomerular estimada. Ref: KDIGO 2024.",
+        "KDIGO 2024 / Inker et al. NEJM 2021",
+        "Taxa de filtração glomerular estimada.",
         egfr_conteudo,
         btn_id=f"{prefixo}egfr-btn",
         resultado_id=f"{prefixo}egfr-resultado",
+        ref_url="https://doi.org/10.1056/NEJMoa2102953",
     )
 
     if pre_idade and pre_idade >= 65:
@@ -252,11 +275,12 @@ def _render_calculadoras_ui(prefixo: str = "rota-",
 
     heart_card = _card_calc(
         "HEART score",
-        "Risco MACE em 6 semanas — dor torácica na emergência. "
-        "Ref: Backus et al 2013.",
+        "Backus et al. Int J Cardiol 2013",
+        "Risco MACE em 6 semanas — dor torácica na emergência.",
         heart_dropdowns,
         btn_id=f"{prefixo}heart-btn",
         resultado_id=f"{prefixo}heart-resultado",
+        ref_url="https://doi.org/10.1016/j.ijcard.2013.01.255",
     )
 
     return html.Div([_DISCLAIMER, cha_card, hb_card, egfr_card, heart_card])
