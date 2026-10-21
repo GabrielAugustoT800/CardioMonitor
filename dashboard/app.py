@@ -33,6 +33,7 @@ app = Dash(
     ],
 )
 server = app.server
+app.server.config["TIMEOUT"] = 120  # segundos
 
 
 # ---- static layout -------------------------------------------------------
@@ -421,4 +422,4 @@ def _guard_autenticacao(pathname, papel_data):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="127.0.0.1", port=8050)
+    app.run(debug=True, host="127.0.0.1", port=8050, threaded=True)
